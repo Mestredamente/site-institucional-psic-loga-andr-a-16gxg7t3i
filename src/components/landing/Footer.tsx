@@ -10,9 +10,10 @@ export default function Footer({ crp = 'CRP 14/075954' }: FooterProps) {
 
   return (
     <footer
+      id="rodape"
       role="contentinfo"
       aria-label="Rodapé institucional"
-      className="bg-warm-900 text-warm-200 pt-16 pb-12 border-t border-warm-800 relative"
+      className="bg-warm-900 text-warm-200 pt-16 pb-24 md:pb-20 border-t border-warm-800 relative"
     >
       {/* Detalhe fino dourado decorativo */}
       <div className="max-w-xs mx-auto mb-10 gold-divider opacity-40" />

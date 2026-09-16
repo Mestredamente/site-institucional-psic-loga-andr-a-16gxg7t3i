@@ -252,7 +252,11 @@ export default function Index() {
       <Footer crp={heroContent?.crp || 'CRP 14/075954'} />
 
       {/* 11. Botão Flutuante de WhatsApp Fixo */}
-      <WhatsAppButton phone={whatsappPhone} message={whatsappMessage} />
+      <WhatsAppButton
+        phone={whatsappPhone}
+        message={whatsappMessage}
+        targetFooterSelector="#rodape"
+      />
     </div>
   )
 }
