@@ -1,6 +1,7 @@
 import { BookOpen, Video, Calendar, ArrowRight } from 'lucide-react'
 import type { BlogPostRecord } from '@/types/content'
 import { getFileUrl } from '@/services/content'
+import SmartImage from '@/components/ui/SmartImage'
 
 interface BlogSectionProps {
   posts: BlogPostRecord[]
@@ -41,27 +42,24 @@ export default function BlogSection({ posts }: BlogSectionProps) {
                       {post.type === 'vlog' ? (
                         <div className="w-full h-full flex items-center justify-center bg-warm-800 text-white">
                           <Video className="w-12 h-12 text-sage-300 opacity-80" />
-                        </div>
-                      ) : (
-                        <img
-                          src={mediaUrl}
-                          alt={post.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                        />
-                      )}
-                      <span className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-warm-700 flex items-center gap-1.5 shadow-xs">
-                        {post.type === 'vlog' ? (
-                          <>
+                          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-warm-700 flex items-center gap-1.5 shadow-xs z-10">
                             <Video className="w-3.5 h-3.5 text-sage-600" />
                             Vlog
-                          </>
-                        ) : (
-                          <>
+                          </span>
+                        </div>
+                      ) : (
+                        <SmartImage
+                          src={mediaUrl}
+                          alt={post.title}
+                          containerClassName="w-full h-full"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        >
+                          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-warm-700 flex items-center gap-1.5 shadow-xs z-10">
                             <BookOpen className="w-3.5 h-3.5 text-sage-600" />
                             Blog
-                          </>
-                        )}
-                      </span>
+                          </span>
+                        </SmartImage>
+                      )}
                     </div>
                   )}
 

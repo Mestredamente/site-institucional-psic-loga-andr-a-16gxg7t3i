@@ -2,9 +2,12 @@ import { Users, CheckCircle2, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { OrientacaoParentalContent } from '@/types/content'
 
+import SmartImage from '@/components/ui/SmartImage'
+
 interface OrientacaoParentalProps {
   content?: OrientacaoParentalContent
-  photoUrl?: string
+  photoUrl?: string | null
+  isLoadingMedia?: boolean
   whatsappPhone?: string
   whatsappMessage?: string
 }
@@ -12,6 +15,7 @@ interface OrientacaoParentalProps {
 export default function OrientacaoParental({
   content,
   photoUrl,
+  isLoadingMedia,
   whatsappPhone = '5511999998888',
   whatsappMessage = '',
 }: OrientacaoParentalProps) {
@@ -72,13 +76,15 @@ export default function OrientacaoParental({
                 'A parentalidade é uma das jornadas mais desafiadoras e enriquecedoras da vida. A orientação parental oferece apoio qualificado para mães, pais e responsáveis que buscam educar com afeto, respeito e firmeza, sem violência e sem culpa.'}
             </p>
 
-            {/* Foto ilustrativa (se disponível) */}
-            {photoUrl && (
-              <div className="pt-2 max-w-2xl mx-auto">
-                <div className="aspect-[3/2] w-full rounded-2xl overflow-hidden border-2 border-sage-200 shadow-sm">
-                  <img
+            {/* Foto ilustrativa (com skeleton neutro durante loading e aspect-ratio fixo 3/2) */}
+            {(isLoadingMedia || photoUrl) && (
+              <div className="pt-2 max-w-2xl mx-auto w-full">
+                <div className="aspect-[3/2] w-full rounded-2xl overflow-hidden border-2 border-sage-200 shadow-sm bg-sage-100/50">
+                  <SmartImage
                     src={photoUrl}
+                    isLoading={isLoadingMedia}
                     alt="Orientação Parental e Acolhimento Familiar"
+                    containerClassName="w-full h-full"
                     className="w-full h-full object-cover"
                   />
                 </div>

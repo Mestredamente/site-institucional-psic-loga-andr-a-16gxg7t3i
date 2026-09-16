@@ -5,16 +5,23 @@ import { Button } from '@/components/ui/button'
 interface HeaderProps {
   whatsappPhone?: string
   whatsappMessage?: string
-  logoUrl?: string
+  logoUrl?: string | null
+  isLoadingMedia?: boolean
 }
 
 export default function Header({
   whatsappPhone = '5511999998888',
   whatsappMessage = '',
   logoUrl,
+  isLoadingMedia = false,
 }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [logoLoaded, setLogoLoaded] = useState(false)
+
+  useEffect(() => {
+    setLogoLoaded(false)
+  }, [logoUrl])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,10 +58,26 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo / Nome */}
         <a href="#" className="flex items-center gap-3 group focus:outline-none">
-          {logoUrl ? (
-            <img src={logoUrl} alt="Andréa Armôa" className="h-10 w-auto object-contain" />
+          {isLoadingMedia ? (
+            /* Skeleton neutro para evitar salto durante o carregamento inicial */
+            <div className="h-10 w-44 rounded-lg bg-warm-200/60 animate-pulse" />
+          ) : logoUrl ? (
+            <div className="relative h-10 flex items-center">
+              {!logoLoaded && (
+                <div className="absolute inset-0 w-24 h-10 rounded bg-warm-200/50 animate-pulse" />
+              )}
+              <img
+                src={logoUrl}
+                alt="Andréa Armôa"
+                onLoad={() => setLogoLoaded(true)}
+                className={`h-10 w-auto object-contain transition-opacity duration-300 ${
+                  logoLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </div>
           ) : (
-            <div className="flex flex-col">
+            /* Monograma / Tipografia Padrão quando confirmado que não há logo salvo */
+            <div className="flex flex-col animate-fade-in">
               <div className="flex items-center gap-2">
                 <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-800 group-hover:text-warm-900 transition-colors">
                   Andréa Armôa

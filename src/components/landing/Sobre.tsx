@@ -1,14 +1,16 @@
 import { Award, CheckCircle2 } from 'lucide-react'
 import type { SobreContent } from '@/types/content'
 
+import SmartImage from '@/components/ui/SmartImage'
+
 interface SobreProps {
   content?: SobreContent
-  photoUrl?: string
+  photoUrl?: string | null
+  isLoadingMedia?: boolean
 }
 
-export default function Sobre({ content, photoUrl }: SobreProps) {
+export default function Sobre({ content, photoUrl, isLoadingMedia }: SobreProps) {
   const defaultPhoto = 'https://img.usecurling.com/p/800/1000?q=psychology+therapy+office'
-  const finalPhoto = photoUrl || defaultPhoto
 
   return (
     <section id="sobre" className="py-20 lg:py-28 bg-white border-t border-warm-200">
@@ -17,28 +19,31 @@ export default function Sobre({ content, photoUrl }: SobreProps) {
           {/* Foto Secundária / Card Lateral */}
           <div className="lg:col-span-5 order-2 lg:order-1">
             <div className="relative rounded-3xl overflow-hidden shadow-lg border border-warm-200 bg-warm-50 aspect-[4/5] group">
-              <img
-                src={finalPhoto}
+              <SmartImage
+                src={photoUrl}
+                fallbackSrc={defaultPhoto}
+                isLoading={isLoadingMedia}
                 alt="Consultório Andréa Armôa"
+                containerClassName="w-full h-full"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-warm-900/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/90 backdrop-blur border border-warm-200 shadow-sm text-warm-700">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-sage-200 flex items-center justify-center text-sage-800">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-sage-700">
-                      Compromisso Ético
-                    </p>
-                    <p className="text-sm font-medium text-warm-700">
-                      Registro Ativo no CRP 14/075954
-                    </p>
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-warm-900/60 via-transparent to-transparent pointer-events-none z-10" />
+                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/90 backdrop-blur border border-warm-200 shadow-sm text-warm-700 z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-sage-200 flex items-center justify-center text-sage-800">
+                      <Award className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-sage-700">
+                        Compromisso Ético
+                      </p>
+                      <p className="text-sm font-medium text-warm-700">
+                        Registro Ativo no CRP 14/075954
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </SmartImage>
             </div>
           </div>
 

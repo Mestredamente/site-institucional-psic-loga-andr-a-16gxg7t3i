@@ -26,13 +26,15 @@ import type { BlogPostRecord, DocumentRecord } from '@/types/content'
 
 export default function Index() {
   const [contentMap, setContentMap] = useState<Record<string, any>>({})
-  const [mediaMap, setMediaMap] = useState<Record<string, string>>({})
+  // mediaMap inicia como null para representar busca em andamento e evitar qualquer FOUC
+  const [mediaMap, setMediaMap] = useState<Record<string, string> | null>(null)
   const [blogPosts, setBlogPosts] = useState<BlogPostRecord[]>([])
   const [documents, setDocuments] = useState<DocumentRecord[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingMedia, setLoadingMedia] = useState(true)
 
   const loadData = useCallback(async () => {
     try {
+      setLoadingMedia(true)
       const [contentData, mediaData, postsData, docsData] = await Promise.all([
         fetchSiteContent(),
         fetchSiteMedia(),
@@ -40,13 +42,14 @@ export default function Index() {
         fetchDocuments(),
       ])
       setContentMap(contentData)
-      setMediaMap(mediaData)
+      setMediaMap(mediaData || {})
       setBlogPosts(postsData)
       setDocuments(docsData)
     } catch (err) {
       console.error('Erro ao carregar dados:', err)
+      setMediaMap({})
     } finally {
-      setLoading(false)
+      setLoadingMedia(false)
     }
   }, [])
 
@@ -60,7 +63,7 @@ export default function Index() {
     if (siteConfig?.accent_color) {
       applyAccentColor(siteConfig.accent_color)
     }
-    if (mediaMap['favicon']) {
+    if (mediaMap && mediaMap['favicon']) {
       applyFavicon(mediaMap['favicon'])
     }
   }, [contentMap, mediaMap])
@@ -92,28 +95,36 @@ export default function Index() {
   const faqContent = contentMap['faq']
   const contatoContent = contentMap['contato']
 
-  const heroPhoto = mediaMap['hero_foto']
-  const sobrePhoto = mediaMap['sobre_foto']
-  const logoUrl = mediaMap['logo']
+  const heroPhoto = mediaMap ? mediaMap['hero_foto'] || null : undefined
+  const sobrePhoto = mediaMap ? mediaMap['sobre_foto'] || null : undefined
+  const orientacaoPhoto = mediaMap ? mediaMap['orientacao_foto'] || null : undefined
+  const logoUrl = mediaMap ? mediaMap['logo'] || null : undefined
+
   const whatsappPhone = contatoContent?.whatsapp || '5511999998888'
   const whatsappMessage = contatoContent?.whatsapp_message
 
   return (
     <div className="min-h-screen bg-warm-50 text-warm-700 selection:bg-sage-200 selection:text-sage-900">
       {/* Header com Navegação e Âncoras */}
-      <Header whatsappPhone={whatsappPhone} whatsappMessage={whatsappMessage} logoUrl={logoUrl} />
+      <Header
+        whatsappPhone={whatsappPhone}
+        whatsappMessage={whatsappMessage}
+        logoUrl={logoUrl}
+        isLoadingMedia={loadingMedia}
+      />
 
       <main>
         {/* 1. Hero */}
         <Hero
           content={heroContent}
           photoUrl={heroPhoto}
+          isLoadingMedia={loadingMedia}
           whatsappPhone={whatsappPhone}
           whatsappMessage={whatsappMessage}
         />
 
         {/* 2. Sobre Mim */}
-        <Sobre content={sobreContent} photoUrl={sobrePhoto} />
+        <Sobre content={sobreContent} photoUrl={sobrePhoto} isLoadingMedia={loadingMedia} />
 
         {/* 3. Psicoterapia */}
         <Psicoterapia content={psicoterapiaContent} />
@@ -121,7 +132,8 @@ export default function Index() {
         {/* 4. Orientação Parental (Destaque Principal) */}
         <OrientacaoParental
           content={orientacaoContent}
-          photoUrl={mediaMap['orientacao_foto']}
+          photoUrl={orientacaoPhoto}
+          isLoadingMedia={loadingMedia}
           whatsappPhone={whatsappPhone}
           whatsappMessage={whatsappMessage}
         />

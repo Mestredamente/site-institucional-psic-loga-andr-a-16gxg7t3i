@@ -2,9 +2,12 @@ import { Heart, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { HeroContent } from '@/types/content'
 
+import SmartImage from '@/components/ui/SmartImage'
+
 interface HeroProps {
   content?: HeroContent
-  photoUrl?: string
+  photoUrl?: string | null
+  isLoadingMedia?: boolean
   whatsappPhone?: string
   whatsappMessage?: string
 }
@@ -12,6 +15,7 @@ interface HeroProps {
 export default function Hero({
   content,
   photoUrl,
+  isLoadingMedia,
   whatsappPhone = '5511999998888',
   whatsappMessage = '',
 }: HeroProps) {
@@ -21,8 +25,8 @@ export default function Hero({
   )}`
 
   // Imagem default profissional caso o admin ainda não tenha feito upload
+  // NOTA: SÓ deve ser exibida após a consulta ao backend concluir (não durante o loading)
   const defaultPhoto = 'https://img.usecurling.com/ppl/large?gender=female&seed=48'
-  const finalPhoto = photoUrl || defaultPhoto
 
   return (
     <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-24 pb-16 lg:py-0 overflow-hidden bg-gradient-to-b from-warm-50 via-warm-50 to-warm-100/50">
@@ -104,20 +108,23 @@ export default function Hero({
               <div className="absolute inset-0 bg-sage-200/70 rounded-3xl transform rotate-2 group-hover:rotate-1 transition-transform duration-500" />
 
               <div className="relative rounded-3xl overflow-hidden border border-warm-200 bg-white shadow-xl aspect-[3/4]">
-                <img
-                  src={finalPhoto}
+                <SmartImage
+                  src={photoUrl}
+                  fallbackSrc={defaultPhoto}
+                  isLoading={isLoadingMedia}
+                  priority={true}
                   alt={content?.title || 'Dra. Andréa Armôa'}
+                  containerClassName="w-full h-full"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                  loading="eager"
-                />
-
-                {/* Legenda sutil no rodapé da imagem */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-warm-900/80 via-warm-900/40 to-transparent p-5 text-white">
-                  <p className="font-serif font-bold text-lg">Andréa Armôa</p>
-                  <p className="text-xs text-warm-100 opacity-90">
-                    Psicóloga Clínica & Neuropsicóloga • CRP 14/075954
-                  </p>
-                </div>
+                >
+                  {/* Legenda sutil no rodapé da imagem */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-warm-900/80 via-warm-900/40 to-transparent p-5 text-white z-10 pointer-events-none">
+                    <p className="font-serif font-bold text-lg">Andréa Armôa</p>
+                    <p className="text-xs text-warm-100 opacity-90">
+                      Psicóloga Clínica & Neuropsicóloga • CRP 14/075954
+                    </p>
+                  </div>
+                </SmartImage>
               </div>
             </div>
           </div>
