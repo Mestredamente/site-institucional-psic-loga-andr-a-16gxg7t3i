@@ -13,7 +13,11 @@ export default function Sobre({ content, photoUrl, isLoadingMedia }: SobreProps)
   const defaultPhoto = 'https://img.usecurling.com/p/800/1000?q=psychology+therapy+office'
 
   return (
-    <section id="sobre" className="py-20 lg:py-28 bg-white border-t border-warm-200">
+    <section
+      id="sobre"
+      aria-labelledby="sobre-title"
+      className="py-20 lg:py-28 bg-white border-t border-warm-200"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Foto Secundária / Card Lateral */}
@@ -23,9 +27,13 @@ export default function Sobre({ content, photoUrl, isLoadingMedia }: SobreProps)
                 src={photoUrl}
                 fallbackSrc={defaultPhoto}
                 isLoading={isLoadingMedia}
-                alt="Consultório Andréa Armôa"
+                priority={false}
+                fetchPriority="low"
+                width={800}
+                height={1000}
+                alt="Consultório acolhedor de psicologia e neuropsicologia"
                 containerClassName="w-full h-full"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 motion-reduce:transform-none"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-warm-900/60 via-transparent to-transparent pointer-events-none z-10" />
                 <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/90 backdrop-blur border border-warm-200 shadow-sm text-warm-700 z-10">
@@ -53,7 +61,10 @@ export default function Sobre({ content, photoUrl, isLoadingMedia }: SobreProps)
               <span className="text-xs font-bold tracking-widest text-sage-600 uppercase">
                 Apresentação Profissional
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight">
+              <h2
+                id="sobre-title"
+                className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight"
+              >
                 {content?.title || 'Sobre Mim'}
               </h2>
             </div>

@@ -67,14 +67,21 @@ export default function ComoFunciona({ content }: ComoFuncionaProps) {
   ]
 
   return (
-    <section id="como-funciona" className="py-20 lg:py-28 bg-warm-100/60 border-t border-warm-200">
+    <section
+      id="como-funciona"
+      aria-labelledby="como-funciona-title"
+      className="py-20 lg:py-28 bg-warm-100/60 border-t border-warm-200"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#C9A96A]/40 text-xs font-semibold text-warm-700 uppercase tracking-widest shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96A]" />
             <span>Etapas & Modalidades</span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight">
+          <h2
+            id="como-funciona-title"
+            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight"
+          >
             {content?.title || 'Como Funciona'}
           </h2>
           <p className="text-base sm:text-lg text-warm-500 font-normal">

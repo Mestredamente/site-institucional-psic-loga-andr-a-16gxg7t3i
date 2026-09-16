@@ -42,6 +42,7 @@ export default function OrientacaoParental({
   return (
     <section
       id="orientacao-parental"
+      aria-labelledby="orientacao-title"
       className="py-20 lg:py-28 bg-white border-t border-warm-200 relative"
     >
       {/* Linha fina decorativa superior com toque de ouro sutil */}
@@ -61,7 +62,10 @@ export default function OrientacaoParental({
               <span>Destaque Especial • Apoio Parental</span>
             </div>
 
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-800 tracking-tight">
+            <h2
+              id="orientacao-title"
+              className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-800 tracking-tight"
+            >
               {content?.title || 'Orientação Parental'}
             </h2>
 
@@ -87,7 +91,11 @@ export default function OrientacaoParental({
                   <SmartImage
                     src={photoUrl}
                     isLoading={isLoadingMedia}
-                    alt="Orientação Parental e Acolhimento Familiar"
+                    priority={false}
+                    fetchPriority="low"
+                    width={900}
+                    height={600}
+                    alt="Orientação Parental e Acolhimento Familiar para desenvolvimento infantil harmonioso"
                     containerClassName="w-full h-full"
                     className="w-full h-full object-cover"
                   />

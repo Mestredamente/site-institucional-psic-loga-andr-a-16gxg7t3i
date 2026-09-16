@@ -10,13 +10,20 @@ export default function DocumentsSection({ documents }: DocumentsSectionProps) {
   if (!documents || documents.length === 0) return null
 
   return (
-    <section id="documentos" className="py-16 bg-warm-50 border-t border-warm-200">
+    <section
+      id="documentos"
+      aria-labelledby="documentos-title"
+      className="py-16 bg-warm-50 border-t border-warm-200"
+    >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-3 mb-12">
           <span className="text-xs font-bold tracking-widest text-sage-600 uppercase">
             Materiais & Informações
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-warm-700">
+          <h2
+            id="documentos-title"
+            className="font-serif text-2xl sm:text-3xl font-bold text-warm-700"
+          >
             Documentos Informativos
           </h2>
           <p className="text-sm text-warm-500">

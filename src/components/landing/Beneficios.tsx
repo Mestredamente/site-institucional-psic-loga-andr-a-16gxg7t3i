@@ -45,13 +45,20 @@ export default function Beneficios({ content }: BeneficiosProps) {
   ]
 
   return (
-    <section id="beneficios" className="py-20 lg:py-28 bg-white border-t border-warm-200">
+    <section
+      id="beneficios"
+      aria-labelledby="beneficios-title"
+      className="py-20 lg:py-28 bg-white border-t border-warm-200"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
           <span className="text-xs font-bold tracking-widest text-sage-600 uppercase">
             Transformação & Bem-Estar
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight">
+          <h2
+            id="beneficios-title"
+            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight"
+          >
             {content?.title || 'Principais Benefícios do Acompanhamento'}
           </h2>
           <p className="text-base sm:text-lg text-warm-500 font-normal">

@@ -68,6 +68,25 @@ export default function Index() {
     }
   }, [contentMap, mediaMap])
 
+  // Performance LCP: Preload da foto do hero quando houver foto salva (URL absoluta)
+  useEffect(() => {
+    const heroPhotoUrl = mediaMap?.['hero_foto']
+    if (heroPhotoUrl && heroPhotoUrl.trim() !== '') {
+      const existingPreload = document.querySelector('link[data-hero-preload="true"]')
+      if (!existingPreload) {
+        const link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.href = heroPhotoUrl
+        link.setAttribute('fetchpriority', 'high')
+        link.setAttribute('data-hero-preload', 'true')
+        document.head.appendChild(link)
+      } else if (existingPreload.getAttribute('href') !== heroPhotoUrl) {
+        existingPreload.setAttribute('href', heroPhotoUrl)
+      }
+    }
+  }, [mediaMap])
+
   // Aplicar SEO, Metatags, Canonical, Open Graph e Schema.org JSON-LD
   useEffect(() => {
     const siteConfig = contentMap['site_config'] || {}

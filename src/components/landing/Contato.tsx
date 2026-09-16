@@ -50,13 +50,20 @@ export default function Contato({ content }: ContatoProps) {
       : null
 
   return (
-    <section id="contato" className="py-20 lg:py-28 bg-warm-100/60 border-t border-warm-200">
+    <section
+      id="contato"
+      aria-labelledby="contato-title"
+      className="py-20 lg:py-28 bg-warm-100/60 border-t border-warm-200"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
           <span className="text-xs font-bold tracking-widest text-sage-600 uppercase">
             Atendimento & Localização
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight">
+          <h2
+            id="contato-title"
+            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight"
+          >
             {content?.title || 'Entre em Contato'}
           </h2>
           <p className="text-base sm:text-lg text-warm-500 font-normal">
@@ -176,13 +183,13 @@ export default function Contato({ content }: ContatoProps) {
             <div className="pt-6 border-t border-warm-100 space-y-3">
               <Button
                 asChild
-                className="w-full bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium py-6 rounded-2xl shadow-sm text-base transition-all transform hover:scale-[1.01] focus:ring-2 focus:ring-sage-500"
+                className="w-full bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium py-6 rounded-2xl shadow-sm text-base transition-all transform hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2"
               >
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Conversar no WhatsApp com a psicóloga Andréa Armôa"
+                  aria-label="Conversar no WhatsApp"
                 >
                   Conversar no WhatsApp
                 </a>

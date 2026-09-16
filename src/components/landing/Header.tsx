@@ -53,9 +53,10 @@ export default function Header({
 
   return (
     <header
+      role="banner"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-warm-50/90 backdrop-blur-md shadow-sm border-b border-warm-200/60 py-3'
+          ? 'bg-warm-50/95 backdrop-blur-md shadow-sm border-b border-warm-200/60 py-3'
           : 'bg-warm-50/60 backdrop-blur-sm py-5'
       }`}
     >
@@ -96,25 +97,25 @@ export default function Header({
         </a>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-6">
+        <nav aria-label="Navegação principal" className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-warm-700 hover:text-warm-900 transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-sage-400 hover:after:w-full after:transition-all"
+              className="text-sm font-medium text-warm-700 hover:text-warm-900 transition-colors relative py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500 focus-visible:ring-offset-2 rounded after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-sage-400 hover:after:w-full after:transition-all"
             >
               {link.label}
             </a>
           ))}
           <Button
             asChild
-            className="bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium px-5 py-2 rounded-full shadow-sm hover:shadow transition-all transform hover:scale-[1.02] focus:ring-2 focus:ring-sage-500"
+            className="bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium px-5 py-2 rounded-full shadow-sm hover:shadow transition-all transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2"
           >
             <a
               href={whatsappUrl}
               target={whatsappUrl.startsWith('http') ? '_blank' : undefined}
               rel={whatsappUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
-              aria-label="Agendar atendimento com a psicóloga Andréa Armôa"
+              aria-label="Agendar Atendimento"
             >
               Agendar Atendimento
               <ArrowRight className="w-4 h-4 ml-1.5" />
@@ -127,11 +128,12 @@ export default function Header({
           <Button
             variant="ghost"
             size="icon"
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation-drawer"
-            className="text-warm-700 hover:bg-warm-100 focus:ring-2 focus:ring-sage-500"
+            className="text-warm-700 hover:bg-warm-100 focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>

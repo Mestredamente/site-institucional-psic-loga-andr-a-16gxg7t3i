@@ -33,7 +33,10 @@ export default function Hero({
   const defaultPhoto = 'https://img.usecurling.com/ppl/large?gender=female&seed=48'
 
   return (
-    <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-24 pb-16 lg:py-0 overflow-hidden bg-gradient-to-b from-warm-50 via-warm-50 to-warm-100/50">
+    <section
+      aria-labelledby="hero-title"
+      className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-24 pb-16 lg:py-0 overflow-hidden bg-gradient-to-b from-warm-50 via-warm-50 to-warm-100/50"
+    >
       {/* Elementos sutis de fundo */}
       <div className="absolute top-1/4 right-0 w-96 h-96 bg-sage-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-72 h-72 bg-warm-200/50 rounded-full blur-2xl -z-10 pointer-events-none" />
@@ -51,7 +54,10 @@ export default function Hero({
             )}
 
             <div className="space-y-2">
-              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-warm-700 tracking-tight leading-[1.15]">
+              <h1
+                id="hero-title"
+                className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-warm-700 tracking-tight leading-[1.15]"
+              >
                 {content?.title || 'Andréa dos Santos Silva Armôa'}
               </h1>
               <p className="text-base sm:text-lg md:text-xl font-medium text-warm-500">
@@ -76,7 +82,7 @@ export default function Hero({
               <Button
                 asChild
                 size="lg"
-                className="w-full sm:w-auto bg-sage-300 hover:bg-sage-400 text-sage-800 font-semibold px-8 py-6 rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] text-base"
+                className="w-full sm:w-auto bg-sage-300 hover:bg-sage-400 text-sage-800 font-semibold px-8 py-6 rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] text-base focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2"
               >
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                   {content?.cta_primary || 'Agendar Atendimento'}
@@ -86,7 +92,7 @@ export default function Hero({
                 asChild
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto border-warm-300 text-warm-700 hover:bg-warm-100 hover:text-warm-900 font-medium px-8 py-6 rounded-full transition-all text-base"
+                className="w-full sm:w-auto border-warm-300 text-warm-700 hover:bg-warm-100 hover:text-warm-900 font-medium px-8 py-6 rounded-full transition-all text-base focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2"
               >
                 <a href="#sobre">{content?.cta_secondary || 'Conhecer Minha Atuação'}</a>
               </Button>
@@ -117,9 +123,12 @@ export default function Hero({
                   fallbackSrc={defaultPhoto}
                   isLoading={isLoadingMedia}
                   priority={true}
+                  fetchPriority="high"
+                  width={600}
+                  height={800}
                   alt="Andréa dos Santos Silva Armôa, psicóloga clínica e neuropsicóloga no consultório"
                   containerClassName="w-full h-full"
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 motion-reduce:transform-none"
                 >
                   {/* Legenda sutil no rodapé da imagem */}
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-warm-900/80 via-warm-900/40 to-transparent p-5 text-white z-10 pointer-events-none">

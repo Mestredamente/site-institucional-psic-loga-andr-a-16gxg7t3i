@@ -56,6 +56,17 @@ export interface SmartImageProps {
   priority?: boolean
 
   /**
+   * Atributo fetchpriority para LCP
+   */
+  fetchPriority?: 'high' | 'low' | 'auto'
+
+  /**
+   * Dimensões explícitas para evitar Layout Shift (CLS)
+   */
+  width?: number | string
+  height?: number | string
+
+  /**
    * Callback quando a imagem termina de decodificar / carregar
    */
   onLoad?: () => void
@@ -79,6 +90,9 @@ export function SmartImage({
   children,
   emptyFallback,
   priority = false,
+  fetchPriority,
+  width,
+  height,
   onLoad,
 }: SmartImageProps) {
   // A requisição assíncrona é considerada pendente se isLoading for explicitamente true
@@ -121,14 +135,17 @@ export function SmartImage({
         <img
           src={resolvedUrl}
           alt={alt}
+          width={width}
+          height={height}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          fetchPriority={fetchPriority || (priority ? 'high' : 'auto')}
           onLoad={() => {
             setImgLoaded(true)
             onLoad?.()
           }}
           className={cn(
-            'w-full h-full object-cover transition-opacity duration-300 ease-out',
+            'w-full h-full object-cover transition-opacity duration-300 ease-out motion-reduce:transition-none',
             imgLoaded ? 'opacity-100' : 'opacity-0',
             className,
           )}

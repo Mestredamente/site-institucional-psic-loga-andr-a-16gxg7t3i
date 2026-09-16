@@ -9,7 +9,11 @@ export default function Footer({ crp = 'CRP 14/075954' }: FooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-warm-900 text-warm-200 pt-16 pb-12 border-t border-warm-800 relative">
+    <footer
+      role="contentinfo"
+      aria-label="Rodapé institucional"
+      className="bg-warm-900 text-warm-200 pt-16 pb-12 border-t border-warm-800 relative"
+    >
       {/* Detalhe fino dourado decorativo */}
       <div className="max-w-xs mx-auto mb-10 gold-divider opacity-40" />
 
@@ -34,40 +38,40 @@ export default function Footer({ crp = 'CRP 14/075954' }: FooterProps) {
 
           {/* Links Rápidos */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-warm-100">Navegação</h4>
-            <ul className="space-y-2 text-sm text-warm-400">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-warm-100">Navegação</h3>
+            <ul className="space-y-2 text-sm text-warm-300">
               <li>
-                <a href="#sobre" className="hover:text-warm-100 transition-colors">
+                <a href="#sobre" className="hover:text-white transition-colors">
                   Sobre Mim
                 </a>
               </li>
               <li>
-                <a href="#psicoterapia" className="hover:text-warm-100 transition-colors">
+                <a href="#psicoterapia" className="hover:text-white transition-colors">
                   Psicoterapia
                 </a>
               </li>
               <li>
-                <a href="#orientacao-parental" className="hover:text-warm-100 transition-colors">
+                <a href="#orientacao-parental" className="hover:text-white transition-colors">
                   Orientação Parental
                 </a>
               </li>
               <li>
-                <a href="#para-quem" className="hover:text-warm-100 transition-colors">
+                <a href="#para-quem" className="hover:text-white transition-colors">
                   Para Quem
                 </a>
               </li>
               <li>
-                <a href="#como-funciona" className="hover:text-warm-100 transition-colors">
+                <a href="#como-funciona" className="hover:text-white transition-colors">
                   Como Funciona
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-warm-100 transition-colors">
+                <a href="#faq" className="hover:text-white transition-colors">
                   Perguntas Frequentes
                 </a>
               </li>
               <li>
-                <a href="#contato" className="hover:text-warm-100 transition-colors">
+                <a href="#contato" className="hover:text-white transition-colors">
                   Contato & Localização
                 </a>
               </li>
@@ -76,37 +80,53 @@ export default function Footer({ crp = 'CRP 14/075954' }: FooterProps) {
 
           {/* Aviso Ético CRP & Emergências (Exigido no PRD) */}
           <div className="md:col-span-4 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-sage-300">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-sage-300">
               Aviso Ético & Emergências
-            </h4>
-            <div className="p-4 rounded-2xl bg-warm-800/60 border border-warm-800 text-xs text-warm-400 leading-relaxed space-y-2.5">
+            </h3>
+            <div className="p-4 rounded-2xl bg-warm-800/80 border border-warm-700 text-xs text-warm-300 leading-relaxed space-y-2.5">
               <p>
                 Este site possui caráter estritamente informativo e não substitui consultas
                 psicológicas, diagnósticos ou tratamentos especializados. Atuação regulada pelo
                 Conselho Regional de Psicologia ({crp}).
               </p>
-              <p className="text-warm-300 font-medium pt-1 border-t border-warm-700/60">
-                ⚠{' '}
-                <strong className="text-warm-100">Em caso de emergência ou crise emocional</strong>:
+              <p className="text-warm-200 font-medium pt-1 border-t border-warm-700/60">
+                ⚠ <strong className="text-white">Em caso de emergência ou crise emocional</strong>:
                 Ligue para o Centro de Valorização da Vida (CVV) pelo telefone{' '}
-                <strong className="text-white">188</strong> (ligação gratuita, 24 horas) ou procure
-                a Unidade de Pronto Atendimento (UPA / SAMU 192) mais próxima.
+                <strong className="text-white underline">188</strong> (ligação gratuita, 24 horas)
+                ou procure a Unidade de Pronto Atendimento (UPA / SAMU 192) mais próxima.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Rodapé inferior com Direitos e Link discreto da Área da Profissional */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-warm-500">
-          <p>© {currentYear} Andréa dos Santos Silva Armôa. Todos os direitos reservados.</p>
+        {/* Rodapé inferior com Direitos, Links Legais (LGPD) e Link discreto da Área da Profissional */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-warm-400">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <p>© {currentYear} Andréa dos Santos Silva Armôa. Todos os direitos reservados.</p>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/politica-de-privacidade"
+                className="hover:text-warm-100 transition-colors underline-offset-4 hover:underline"
+              >
+                Política de Privacidade
+              </Link>
+              <span>•</span>
+              <Link
+                to="/aviso-de-cookies"
+                className="hover:text-warm-100 transition-colors underline-offset-4 hover:underline"
+              >
+                Aviso de Cookies
+              </Link>
+            </div>
+          </div>
 
           {/* Link discreto "Área da Profissional" */}
           <Link
             to="/admin"
-            className="inline-flex items-center gap-1.5 text-warm-500 hover:text-warm-300 transition-colors py-1 px-2 rounded hover:bg-warm-800/40"
+            className="inline-flex items-center gap-1.5 text-warm-400 hover:text-white transition-colors py-1 px-2.5 rounded hover:bg-warm-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500"
             title="Acesso restrito à profissional"
           >
-            <Lock className="w-3 h-3 text-warm-500" />
+            <Lock className="w-3 h-3 text-warm-400" aria-hidden="true" />
             <span>Área da Profissional</span>
           </Link>
         </div>

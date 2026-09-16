@@ -29,10 +29,10 @@ export default function WhatsAppButton({
         href={whatsappUrl}
         target={whatsappUrl.startsWith('http') ? '_blank' : undefined}
         rel={whatsappUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
-        aria-label="Conversar no WhatsApp com Andréa dos Santos Silva Armôa"
-        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:bg-[#20bd5a] transition-all transform hover:scale-105 animate-pulse-subtle focus:outline-none focus:ring-4 focus:ring-[#25D366]/30 motion-reduce:animate-none motion-reduce:transform-none"
+        aria-label="Conversar no WhatsApp"
+        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:bg-[#20bd5a] transition-all transform hover:scale-105 animate-pulse-subtle focus:outline-none focus:ring-4 focus:ring-[#25D366]/40 motion-reduce:animate-none motion-reduce:transform-none"
       >
-        <MessageCircle className="w-7 h-7 md:w-8 md:h-8" />
+        <MessageCircle className="w-7 h-7 md:w-8 md:h-8" aria-hidden="true" />
       </a>
     </aside>
   )

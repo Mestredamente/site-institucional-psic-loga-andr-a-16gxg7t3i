@@ -49,13 +49,20 @@ export default function Faq({ content }: FaqProps) {
   const questions = content?.questions?.length ? content.questions : defaultQuestions
 
   return (
-    <section id="faq" className="py-20 lg:py-28 bg-white border-t border-warm-200">
+    <section
+      id="faq"
+      aria-labelledby="faq-title"
+      className="py-20 lg:py-28 bg-white border-t border-warm-200"
+    >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
           <span className="text-xs font-bold tracking-widest text-sage-600 uppercase">
             Dúvidas Frequentes
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight">
+          <h2
+            id="faq-title"
+            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-700 tracking-tight"
+          >
             {content?.title || 'Perguntas Frequentes'}
           </h2>
           <p className="text-base sm:text-lg text-warm-500 font-normal">
@@ -72,7 +79,7 @@ export default function Faq({ content }: FaqProps) {
               value={`item-${index}`}
               className="border border-warm-200 rounded-2xl px-6 py-1 bg-warm-50/50 hover:bg-warm-50 transition-colors data-[state=open]:bg-white data-[state=open]:border-sage-300 data-[state=open]:shadow-sm"
             >
-              <AccordionTrigger className="text-left font-serif text-lg font-semibold text-warm-700 hover:text-warm-900 hover:no-underline py-4">
+              <AccordionTrigger className="text-left font-serif text-lg font-semibold text-warm-700 hover:text-warm-900 hover:no-underline py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500 focus-visible:ring-offset-2 rounded-lg">
                 {item.q}
               </AccordionTrigger>
               <AccordionContent className="text-sm sm:text-base text-warm-600 leading-relaxed font-normal pt-1 pb-5">

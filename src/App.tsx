@@ -6,7 +6,10 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import Index from './pages/Index'
 import Admin from './pages/Admin'
 import NotFound from './pages/NotFound'
+import PoliticaPrivacidade from './pages/PoliticaPrivacidade'
+import AvisoCookies from './pages/AvisoCookies'
 import Layout from './components/Layout'
+import CookieBanner from './components/CookieBanner'
 import { AuthProvider } from './context/AuthContext'
 
 // ONLY IMPORT AND RENDER WORKING PAGES, NEVER ADD PLACEHOLDER COMPONENTS OR PAGES IN THIS FILE
@@ -22,9 +25,12 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
+            <Route path="/aviso-de-cookies" element={<AvisoCookies />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <CookieBanner />
       </TooltipProvider>
     </AuthProvider>
   </BrowserRouter>
