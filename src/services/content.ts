@@ -630,6 +630,7 @@ export async function exportContentBackup(): Promise<string> {
     site_content: contentMap,
     blog_posts: blogPosts.map((p) => ({
       title: p.title,
+      resumo: p.resumo || '',
       type: p.type,
       content: p.content,
       published: p.published,

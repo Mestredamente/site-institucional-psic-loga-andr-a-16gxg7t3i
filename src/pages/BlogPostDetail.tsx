@@ -18,6 +18,7 @@ import SmartImage from '@/components/ui/SmartImage'
 import { fetchBlogPostById, fetchSiteContent, fetchBlogPosts, getFileUrl } from '@/services/content'
 import type { BlogPostRecord } from '@/types/content'
 import { toast } from '@/hooks/use-toast'
+import { updateMetaTags } from '@/lib/seo'
 
 export default function BlogPostDetail() {
   const { id } = useParams<{ id: string }>()
@@ -58,8 +59,70 @@ export default function BlogPostDetail() {
         if (isCancelled) return
 
         if (postData.status === 'fulfilled' && postData.value) {
-          setPost(postData.value)
-          document.title = `${postData.value.title} | Andréa Armôa`
+          const currentPost = postData.value
+          setPost(currentPost)
+
+          // Extrai o resumo ou fallback dos primeiros 160 caracteres do corpo
+          const postResumo =
+            (currentPost.resumo && currentPost.resumo.trim()) ||
+            (currentPost.content || '')
+              .replace(/<[^>]+>/g, '')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 160) ||
+            'Artigo informativo sobre psicologia clínica e neuropsicologia por Andréa Armôa.'
+
+          const postMedia = currentPost.media_file
+            ? getFileUrl(currentPost, currentPost.media_file)
+            : currentPost.media_url || undefined
+
+          // Metatags dinâmicas, Open Graph e Twitter Card específicos do artigo
+          updateMetaTags({
+            title: `${currentPost.title} | Andréa Armôa`,
+            description: postResumo,
+            ogImageUrl: postMedia,
+            ogType: 'article',
+            siteName: 'Andréa Armôa | Psicologia Clínica e Neuropsicologia',
+          })
+
+          // Injetar JSON-LD específico do Artigo / BlogPosting
+          try {
+            const scriptId = 'jsonld-blog-post'
+            let script = document.getElementById(scriptId) as HTMLScriptElement | null
+            if (!script) {
+              script = document.createElement('script')
+              script.id = scriptId
+              script.type = 'application/ld+json'
+              document.head.appendChild(script)
+            }
+            const postUrl =
+              typeof window !== 'undefined'
+                ? window.location.href
+                : `https://andreaarmoa.com.br/blog/${currentPost.id}`
+            const articleSchema = {
+              '@context': 'https://schema.org',
+              '@type': currentPost.type === 'vlog' ? 'VideoObject' : 'BlogPosting',
+              headline: currentPost.title,
+              description: postResumo,
+              url: postUrl,
+              datePublished: currentPost.created,
+              dateModified: currentPost.updated || currentPost.created,
+              author: {
+                '@type': 'Person',
+                name: 'Andréa dos Santos Silva Armôa',
+                jobTitle: 'Psicóloga Clínica & Neuropsicóloga',
+                identifier: 'CRP 14/075954',
+              },
+              publisher: {
+                '@type': 'Person',
+                name: 'Andréa dos Santos Silva Armôa',
+              },
+              image: postMedia || undefined,
+            }
+            script.textContent = JSON.stringify(articleSchema, null, 2)
+          } catch (e) {
+            console.warn('Erro ao atualizar JSON-LD do artigo:', e)
+          }
         } else {
           setNotFound(true)
           document.title = 'Artigo Não Encontrado (404) | Andréa Armôa'
@@ -324,9 +387,16 @@ export default function BlogPostDetail() {
                 <div className="w-3/4 h-10 bg-warm-200 animate-pulse rounded-xl" />
               </div>
             ) : (
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-800 tracking-tight leading-tight">
-                {post?.title}
-              </h1>
+              <div className="space-y-3">
+                <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-800 tracking-tight leading-tight">
+                  {post?.title}
+                </h1>
+                {post?.resumo && (
+                  <p className="text-base sm:text-lg text-warm-600 font-medium leading-relaxed italic border-l-2 border-sage-300 pl-4 py-0.5">
+                    {post.resumo}
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Assinatura da profissional */}

@@ -88,11 +88,16 @@ export default function BlogSection({ posts }: BlogSectionProps) {
                       {post.title}
                     </h3>
 
-                    {/* Conteúdo HTML resumido */}
-                    <div
-                      className="text-xs sm:text-sm text-warm-600 leading-relaxed font-normal line-clamp-4 prose prose-stone"
-                      dangerouslySetInnerHTML={{ __html: post.content }}
-                    />
+                    {/* Texto exibido no CARD: usa o campo Resumo (com fallback automático do início do corpo até 160 caracteres) */}
+                    <p className="text-xs sm:text-sm text-warm-600 leading-relaxed font-normal line-clamp-3">
+                      {post.resumo && post.resumo.trim()
+                        ? post.resumo
+                        : (post.content || '')
+                            .replace(/<[^>]+>/g, '')
+                            .replace(/\s+/g, ' ')
+                            .trim()
+                            .slice(0, 160)}
+                    </p>
                   </div>
                 </div>
 

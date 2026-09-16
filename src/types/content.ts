@@ -138,6 +138,7 @@ export interface SiteMediaRecord {
 export interface BlogPostRecord {
   id: string
   title: string
+  resumo?: string
   content: string
   type: 'blog' | 'vlog'
   media_file?: string
