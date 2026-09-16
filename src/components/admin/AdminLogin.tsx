@@ -43,6 +43,17 @@ export default function AdminLogin() {
         <p className="mt-2 text-center text-sm text-warm-500">
           Painel de administração e gestão do site institucional
         </p>
+
+        {/* Mensagem clara e ética de proteção e uso exclusivo */}
+        <div className="mt-4 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 leading-relaxed text-center shadow-xs">
+          <strong>Aviso Ético & Sigilo Profissional:</strong> Este painel é de uso estritamente
+          exclusivo da psicóloga responsável. Em conformidade com o Código de Ética do Psicólogo e a
+          LGPD,{' '}
+          <u>
+            nenhum dado confidencial de pacientes ou prontuários deve ser armazenado neste ambiente
+          </u>
+          .
+        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">

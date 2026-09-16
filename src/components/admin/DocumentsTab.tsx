@@ -47,7 +47,11 @@ export default function DocumentsTab({ documents, onRefresh }: DocumentsTabProps
 
     try {
       await createDocument(formData)
-      toast({ title: 'Documento anexado com sucesso!' })
+      toast({
+        title: 'Documento publicado com sucesso!',
+        description:
+          'O arquivo foi salvo na coleção do backend e já pode ser baixado no site público.',
+      })
       setTitle('')
       setDescription('')
       setFile(null)

@@ -9,6 +9,12 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, pass: string) => Promise<void>
   logout: () => void
+  updateCredentials: (data: {
+    email?: string
+    password?: string
+    oldPassword?: string
+    name?: string
+  }) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -50,6 +56,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(pb.authStore.token)
   }
 
+  const updateCredentials = async (data: {
+    email?: string
+    password?: string
+    oldPassword?: string
+    name?: string
+  }) => {
+    if (!pb.authStore.record?.id) {
+      throw new Error('Nenhum usuário logado.')
+    }
+    const updatePayload: Record<string, any> = {}
+    if (data.name) updatePayload.name = data.name
+    if (data.email) updatePayload.email = data.email
+    if (data.password) {
+      updatePayload.password = data.password
+      updatePayload.passwordConfirm = data.password
+      if (data.oldPassword) {
+        updatePayload.oldPassword = data.oldPassword
+      }
+    }
+    const updated = await pb.collection('users').update(pb.authStore.record.id, updatePayload)
+    setUser(updated)
+  }
+
   const logout = () => {
     pb.authStore.clear()
     setUser(null)
@@ -65,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
+        updateCredentials,
       }}
     >
       {children}

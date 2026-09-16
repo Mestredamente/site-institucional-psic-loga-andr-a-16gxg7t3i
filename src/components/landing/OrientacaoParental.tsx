@@ -4,12 +4,14 @@ import type { OrientacaoParentalContent } from '@/types/content'
 
 interface OrientacaoParentalProps {
   content?: OrientacaoParentalContent
+  photoUrl?: string
   whatsappPhone?: string
   whatsappMessage?: string
 }
 
 export default function OrientacaoParental({
   content,
+  photoUrl,
   whatsappPhone = '5511999998888',
   whatsappMessage = '',
 }: OrientacaoParentalProps) {
@@ -58,6 +60,19 @@ export default function OrientacaoParental({
               {content?.description ||
                 'A parentalidade é uma das jornadas mais desafiadoras e enriquecedoras da vida. A orientação parental oferece apoio qualificado para mães, pais e responsáveis que buscam educar com afeto, respeito e firmeza, sem violência e sem culpa.'}
             </p>
+
+            {/* Foto ilustrativa (se disponível) */}
+            {photoUrl && (
+              <div className="pt-2 max-w-2xl mx-auto">
+                <div className="aspect-[3/2] w-full rounded-2xl overflow-hidden border-2 border-sage-200 shadow-sm">
+                  <img
+                    src={photoUrl}
+                    alt="Orientação Parental e Acolhimento Familiar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Lista de pontos em grid */}
             <div className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-3xl mx-auto">

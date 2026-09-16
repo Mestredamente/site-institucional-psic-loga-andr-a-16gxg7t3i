@@ -90,6 +90,14 @@ export interface ContatoContent {
   maps_iframe_url: string
 }
 
+export interface SiteConfigContent {
+  accent_color: string
+  site_title?: string
+  site_description?: string
+  admin_email?: string
+  updated_at?: string
+}
+
 export interface SiteContentRecord {
   id: string
   key: string

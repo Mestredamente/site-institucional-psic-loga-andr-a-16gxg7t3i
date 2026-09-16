@@ -17,6 +17,7 @@ interface EditTextsTabProps {
 export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProps) {
   const [activeSection, setActiveSection] = useState('hero')
   const [isSaving, setIsSaving] = useState(false)
+  const [savingKey, setSavingKey] = useState<string | null>(null)
 
   // Estados locais para cada seção
   const [hero, setHero] = useState(
@@ -221,11 +222,12 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
 
   const handleSave = async (key: string, data: any) => {
     setIsSaving(true)
+    setSavingKey(key)
     try {
       await updateSiteContent(key, data)
       toast({
-        title: 'Sucesso!',
-        description: `Seção "${key}" atualizada com sucesso.`,
+        title: 'Publicado no site com sucesso!',
+        description: `As alterações da seção "${key}" já estão visíveis para todos os visitantes.`,
       })
       onRefresh()
     } catch (err: any) {
@@ -237,6 +239,7 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
       })
     } finally {
       setIsSaving(false)
+      setSavingKey(null)
     }
   }
 

@@ -21,6 +21,7 @@ import {
   fetchDocuments,
 } from '@/services/content'
 import { useRealtime } from '@/hooks/use-realtime'
+import { applyAccentColor, applyFavicon } from '@/lib/theme'
 import type { BlogPostRecord, DocumentRecord } from '@/types/content'
 
 export default function Index() {
@@ -52,6 +53,17 @@ export default function Index() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  // Aplicar cor de destaque global e favicon
+  useEffect(() => {
+    const siteConfig = contentMap['site_config']
+    if (siteConfig?.accent_color) {
+      applyAccentColor(siteConfig.accent_color)
+    }
+    if (mediaMap['favicon']) {
+      applyFavicon(mediaMap['favicon'])
+    }
+  }, [contentMap, mediaMap])
 
   // Subscrições realtime para atualizar a landing page imediatamente após edições no admin
   useRealtime('site_content', () => {
@@ -109,6 +121,7 @@ export default function Index() {
         {/* 4. Orientação Parental (Destaque Principal) */}
         <OrientacaoParental
           content={orientacaoContent}
+          photoUrl={mediaMap['orientacao_foto']}
           whatsappPhone={whatsappPhone}
           whatsappMessage={whatsappMessage}
         />

@@ -84,10 +84,20 @@ export default function BlogTab({ posts, onRefresh }: BlogTabProps) {
     try {
       if (editingPost) {
         await updateBlogPost(editingPost.id, formData)
-        toast({ title: 'Publicação atualizada!' })
+        toast({
+          title: 'Publicado com sucesso!',
+          description: published
+            ? 'A publicação já está visível para os visitantes do site.'
+            : 'Salvo como rascunho.',
+        })
       } else {
         await createBlogPost(formData)
-        toast({ title: 'Publicação criada com sucesso!' })
+        toast({
+          title: 'Publicação criada e salva no backend!',
+          description: published
+            ? 'O artigo já está disponível no site público.'
+            : 'Salvo como rascunho no painel.',
+        })
       }
       setIsDialogOpen(false)
       onRefresh()

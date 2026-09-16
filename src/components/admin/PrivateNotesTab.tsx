@@ -51,10 +51,16 @@ export default function PrivateNotesTab({ notes, onRefresh }: PrivateNotesTabPro
     try {
       if (editingNote) {
         await updatePrivateNote(editingNote.id, { title, content })
-        toast({ title: 'Nota privada atualizada!' })
+        toast({
+          title: 'Nota privada salva com sucesso!',
+          description: 'Armazenada com acesso restrito somente à sua conta autenticada.',
+        })
       } else {
         await createPrivateNote({ title, content })
-        toast({ title: 'Nota privada salva com segurança!' })
+        toast({
+          title: 'Nota privada criada!',
+          description: 'Registro salvo no backend com proteção e sigilo garantidos.',
+        })
       }
       setIsDialogOpen(false)
       onRefresh()

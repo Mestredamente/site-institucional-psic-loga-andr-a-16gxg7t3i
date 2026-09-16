@@ -33,16 +33,16 @@ export default {
       },
       colors: {
         sage: {
-          50: '#F4F9F7',
-          100: '#E4F1EC',
-          200: '#CBE5DC',
-          300: '#B5D8CC', // Destaque principal
-          400: '#A3CBBE', // Hover
-          500: '#6FA287', // Sucesso / destaque ativo
-          600: '#54816A',
-          700: '#3D5F4E',
-          800: '#2E3B36',
-          900: '#1D2723',
+          50: 'var(--sage-50, #F4F9F7)',
+          100: 'var(--sage-100, #E4F1EC)',
+          200: 'var(--sage-200, #CBE5DC)',
+          300: 'var(--sage-300, #B5D8CC)', // Destaque principal
+          400: 'var(--sage-400, #A3CBBE)', // Hover
+          500: 'var(--sage-500, #6FA287)', // Sucesso / destaque ativo
+          600: 'var(--sage-600, #54816A)',
+          700: 'var(--sage-700, #3D5F4E)',
+          800: 'var(--sage-800, #2E3B36)',
+          900: 'var(--sage-900, #1D2723)',
         },
         warm: {
           50: '#FFFCF9', // Fundo principal
