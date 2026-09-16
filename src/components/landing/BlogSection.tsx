@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { BookOpen, Video, Calendar, ArrowRight } from 'lucide-react'
 import type { BlogPostRecord } from '@/types/content'
 import { getFileUrl } from '@/services/content'
@@ -39,9 +40,11 @@ export default function BlogSection({ posts }: BlogSectionProps) {
               : post.media_url || null
 
             return (
-              <article
+              <Link
                 key={post.id}
-                className="bg-warm-50/60 rounded-3xl overflow-hidden border border-warm-200 hover:border-sage-300 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                to={`/blog/${post.id}`}
+                aria-label={`Ler artigo completo: ${post.title}`}
+                className="group bg-warm-50/60 rounded-3xl overflow-hidden border border-warm-200 hover:border-sage-400 hover:shadow-lg transition-all duration-300 flex flex-col justify-between focus:outline-none focus:ring-4 focus:ring-sage-400/50"
               >
                 <div>
                   {mediaUrl && (
@@ -63,7 +66,7 @@ export default function BlogSection({ posts }: BlogSectionProps) {
                           priority={false}
                           fetchPriority="low"
                           containerClassName="w-full h-full"
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 motion-reduce:transform-none"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 motion-reduce:transform-none"
                         >
                           <span className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-warm-700 flex items-center gap-1.5 shadow-xs z-10">
                             <BookOpen className="w-3.5 h-3.5 text-sage-600" />
@@ -81,11 +84,11 @@ export default function BlogSection({ posts }: BlogSectionProps) {
                       </span>
                     )}
 
-                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-warm-700 leading-snug hover:text-warm-900">
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-warm-700 leading-snug group-hover:text-warm-900 transition-colors">
                       {post.title}
                     </h3>
 
-                    {/* Conteúdo HTML sutil */}
+                    {/* Conteúdo HTML resumido */}
                     <div
                       className="text-xs sm:text-sm text-warm-600 leading-relaxed font-normal line-clamp-4 prose prose-stone"
                       dangerouslySetInnerHTML={{ __html: post.content }}
@@ -93,14 +96,21 @@ export default function BlogSection({ posts }: BlogSectionProps) {
                   </div>
                 </div>
 
-                <div className="p-6 sm:p-7 pt-0 flex items-center justify-between text-xs text-warm-400 border-t border-warm-100/60 mt-4">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-warm-400" />
-                    <span>{new Date(post.created).toLocaleDateString('pt-BR')}</span>
+                <div className="p-6 sm:p-7 pt-0 space-y-3 border-t border-warm-100/60 mt-4">
+                  <div className="flex items-center justify-between text-xs text-warm-400">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-warm-400" />
+                      <span>{new Date(post.created).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <span className="font-medium text-sage-700">Andréa Armôa</span>
                   </div>
-                  <span className="font-medium text-sage-700">Andréa Armôa</span>
+
+                  <div className="flex items-center gap-1 text-xs font-semibold text-sage-800 group-hover:text-sage-900 group-hover:translate-x-1 transition-all motion-reduce:transform-none">
+                    <span>Ler artigo completo</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-sage-600" />
+                  </div>
                 </div>
-              </article>
+              </Link>
             )
           })}
         </div>

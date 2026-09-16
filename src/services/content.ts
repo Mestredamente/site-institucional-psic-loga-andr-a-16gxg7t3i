@@ -8,11 +8,47 @@ import type {
   ContentVersionRecord,
 } from '@/types/content'
 
+const DEFAULT_TIMEOUT_MS = 15000
+
+export class TimeoutError extends Error {
+  constructor(message = 'Tempo limite de conexão excedido.') {
+    super(message)
+    this.name = 'TimeoutError'
+  }
+}
+
+/**
+ * Envolve uma Promise em um timeout configurável (padrão 15 segundos).
+ * Rejeita com TimeoutError caso a chamada não resolva a tempo.
+ */
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  ms = DEFAULT_TIMEOUT_MS,
+  fallbackMessage = 'Não foi possível sincronizar — tente novamente',
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new TimeoutError(fallbackMessage))
+    }, ms)
+  })
+
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
 export async function fetchSiteContent(): Promise<Record<string, any>> {
   try {
-    const records = await pb.collection('site_content').getFullList<SiteContentRecord>({
-      sort: 'created',
-    })
+    const records = await withTimeout(
+      pb.collection('site_content').getFullList<SiteContentRecord>({
+        sort: 'created',
+      }),
+      DEFAULT_TIMEOUT_MS,
+      'Não foi possível sincronizar — tente novamente',
+    )
     const map: Record<string, any> = {}
     for (const rec of records) {
       map[rec.key] = rec.content
@@ -20,7 +56,7 @@ export async function fetchSiteContent(): Promise<Record<string, any>> {
     return map
   } catch (err) {
     console.error('Erro ao buscar site_content:', err)
-    return {}
+    throw err
   }
 }
 
@@ -60,10 +96,14 @@ export async function saveContentVersion(key: string, content: any, note?: strin
 export async function fetchContentVersions(key?: string): Promise<ContentVersionRecord[]> {
   try {
     const filter = key ? `key="${key}"` : ''
-    return await pb.collection('content_versions').getFullList<ContentVersionRecord>({
-      filter,
-      sort: '-created',
-    })
+    return await withTimeout(
+      pb.collection('content_versions').getFullList<ContentVersionRecord>({
+        filter,
+        sort: '-created',
+      }),
+      DEFAULT_TIMEOUT_MS,
+      'Não foi possível sincronizar — tente novamente',
+    )
   } catch (err) {
     console.error('Erro ao buscar content_versions:', err)
     return []
@@ -84,35 +124,45 @@ export async function updateSiteContent(
   content: any,
   trackVersion = true,
 ): Promise<SiteContentRecord> {
-  try {
-    const existing = await pb
-      .collection('site_content')
-      .getFirstListItem<SiteContentRecord>(`key="${key}"`)
+  return await withTimeout(
+    (async () => {
+      try {
+        const existing = await pb
+          .collection('site_content')
+          .getFirstListItem<SiteContentRecord>(`key="${key}"`)
 
-    // Salva a versão anterior se estiver habilitado e houver conteúdo existente
-    if (trackVersion && existing.content) {
-      await saveContentVersion(
-        key,
-        existing.content,
-        `Alteração realizada em ${new Date().toLocaleString('pt-BR')}`,
-      )
-    }
+        // Salva a versão anterior se estiver habilitado e houver conteúdo existente
+        if (trackVersion && existing.content) {
+          await saveContentVersion(
+            key,
+            existing.content,
+            `Alteração realizada em ${new Date().toLocaleString('pt-BR')}`,
+          )
+        }
 
-    return await pb.collection('site_content').update<SiteContentRecord>(existing.id, {
-      content,
-    })
-  } catch (_) {
-    // Se ainda não existir por algum motivo, cria
-    return await pb.collection('site_content').create<SiteContentRecord>({
-      key,
-      content,
-    })
-  }
+        return await pb.collection('site_content').update<SiteContentRecord>(existing.id, {
+          content,
+        })
+      } catch (_) {
+        // Se ainda não existir por algum motivo, cria
+        return await pb.collection('site_content').create<SiteContentRecord>({
+          key,
+          content,
+        })
+      }
+    })(),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function fetchSiteMedia(): Promise<Record<string, string>> {
   try {
-    const records = await pb.collection('site_media').getFullList<SiteMediaRecord>()
+    const records = await withTimeout(
+      pb.collection('site_media').getFullList<SiteMediaRecord>(),
+      DEFAULT_TIMEOUT_MS,
+      'Não foi possível sincronizar — tente novamente',
+    )
     const map: Record<string, string> = {}
     for (const rec of records) {
       if (rec.file) {
@@ -122,7 +172,7 @@ export async function fetchSiteMedia(): Promise<Record<string, string>> {
     return map
   } catch (err) {
     console.error('Erro ao buscar site_media:', err)
-    return {}
+    throw err
   }
 }
 
@@ -131,25 +181,37 @@ export async function uploadSiteMedia(key: string, file: File): Promise<SiteMedi
   formData.append('key', key)
   formData.append('file', file)
 
-  try {
-    const existing = await pb
-      .collection('site_media')
-      .getFirstListItem<SiteMediaRecord>(`key="${key}"`)
-    return await pb.collection('site_media').update<SiteMediaRecord>(existing.id, formData)
-  } catch (_) {
-    return await pb.collection('site_media').create<SiteMediaRecord>(formData)
-  }
+  return await withTimeout(
+    (async () => {
+      try {
+        const existing = await pb
+          .collection('site_media')
+          .getFirstListItem<SiteMediaRecord>(`key="${key}"`)
+        return await pb.collection('site_media').update<SiteMediaRecord>(existing.id, formData)
+      } catch (_) {
+        return await pb.collection('site_media').create<SiteMediaRecord>(formData)
+      }
+    })(),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function deleteSiteMedia(key: string): Promise<boolean> {
-  try {
-    const existing = await pb
-      .collection('site_media')
-      .getFirstListItem<SiteMediaRecord>(`key="${key}"`)
-    return await pb.collection('site_media').delete(existing.id)
-  } catch (_) {
-    return false
-  }
+  return await withTimeout(
+    (async () => {
+      try {
+        const existing = await pb
+          .collection('site_media')
+          .getFirstListItem<SiteMediaRecord>(`key="${key}"`)
+        return await pb.collection('site_media').delete(existing.id)
+      } catch (_) {
+        return false
+      }
+    })(),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function restoreDefaultContent(): Promise<void> {
@@ -410,60 +472,100 @@ export async function restoreDefaultContent(): Promise<void> {
 export async function fetchBlogPosts(onlyPublished = false): Promise<BlogPostRecord[]> {
   try {
     const filter = onlyPublished ? 'published=true' : ''
-    return await pb.collection('blog_posts').getFullList<BlogPostRecord>({
-      filter,
-      sort: '-created',
-    })
+    return await withTimeout(
+      pb.collection('blog_posts').getFullList<BlogPostRecord>({
+        filter,
+        sort: '-created',
+      }),
+      DEFAULT_TIMEOUT_MS,
+      'Não foi possível sincronizar — tente novamente',
+    )
   } catch (err) {
     console.error('Erro ao buscar blog_posts:', err)
-    return []
+    throw err
   }
+}
+
+export async function fetchBlogPostById(id: string): Promise<BlogPostRecord> {
+  return await withTimeout(
+    pb.collection('blog_posts').getOne<BlogPostRecord>(id),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function createBlogPost(
   data: FormData | Partial<BlogPostRecord>,
 ): Promise<BlogPostRecord> {
-  return await pb.collection('blog_posts').create<BlogPostRecord>(data)
+  return await withTimeout(
+    pb.collection('blog_posts').create<BlogPostRecord>(data),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function updateBlogPost(
   id: string,
   data: FormData | Partial<BlogPostRecord>,
 ): Promise<BlogPostRecord> {
-  return await pb.collection('blog_posts').update<BlogPostRecord>(id, data)
+  return await withTimeout(
+    pb.collection('blog_posts').update<BlogPostRecord>(id, data),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function deleteBlogPost(id: string): Promise<boolean> {
-  return await pb.collection('blog_posts').delete(id)
+  return await withTimeout(
+    pb.collection('blog_posts').delete(id),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function fetchDocuments(): Promise<DocumentRecord[]> {
   try {
-    return await pb.collection('documents').getFullList<DocumentRecord>({
-      sort: '-created',
-    })
+    return await withTimeout(
+      pb.collection('documents').getFullList<DocumentRecord>({
+        sort: '-created',
+      }),
+      DEFAULT_TIMEOUT_MS,
+      'Não foi possível sincronizar — tente novamente',
+    )
   } catch (err) {
     console.error('Erro ao buscar documents:', err)
-    return []
+    throw err
   }
 }
 
 export async function createDocument(formData: FormData): Promise<DocumentRecord> {
-  return await pb.collection('documents').create<DocumentRecord>(formData)
+  return await withTimeout(
+    pb.collection('documents').create<DocumentRecord>(formData),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function deleteDocument(id: string): Promise<boolean> {
-  return await pb.collection('documents').delete(id)
+  return await withTimeout(
+    pb.collection('documents').delete(id),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function fetchPrivateNotes(): Promise<PrivateNoteRecord[]> {
   try {
-    return await pb.collection('private_notes').getFullList<PrivateNoteRecord>({
-      sort: '-created',
-    })
+    return await withTimeout(
+      pb.collection('private_notes').getFullList<PrivateNoteRecord>({
+        sort: '-created',
+      }),
+      DEFAULT_TIMEOUT_MS,
+      'Não foi possível sincronizar — tente novamente',
+    )
   } catch (err) {
     console.error('Erro ao buscar private_notes:', err)
-    return []
+    throw err
   }
 }
 
@@ -471,18 +573,30 @@ export async function createPrivateNote(data: {
   title: string
   content: string
 }): Promise<PrivateNoteRecord> {
-  return await pb.collection('private_notes').create<PrivateNoteRecord>(data)
+  return await withTimeout(
+    pb.collection('private_notes').create<PrivateNoteRecord>(data),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function updatePrivateNote(
   id: string,
   data: { title: string; content: string },
 ): Promise<PrivateNoteRecord> {
-  return await pb.collection('private_notes').update<PrivateNoteRecord>(id, data)
+  return await withTimeout(
+    pb.collection('private_notes').update<PrivateNoteRecord>(id, data),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export async function deletePrivateNote(id: string): Promise<boolean> {
-  return await pb.collection('private_notes').delete(id)
+  return await withTimeout(
+    pb.collection('private_notes').delete(id),
+    DEFAULT_TIMEOUT_MS,
+    'Não foi possível sincronizar — tente novamente',
+  )
 }
 
 export function getFileUrl(

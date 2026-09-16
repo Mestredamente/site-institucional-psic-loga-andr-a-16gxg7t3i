@@ -35,16 +35,17 @@ export default function Index() {
   const loadData = useCallback(async () => {
     try {
       setLoadingMedia(true)
-      const [contentData, mediaData, postsData, docsData] = await Promise.all([
+      const [contentRes, mediaRes, postsRes, docsRes] = await Promise.allSettled([
         fetchSiteContent(),
         fetchSiteMedia(),
         fetchBlogPosts(true),
         fetchDocuments(),
       ])
-      setContentMap(contentData)
-      setMediaMap(mediaData || {})
-      setBlogPosts(postsData)
-      setDocuments(docsData)
+      if (contentRes.status === 'fulfilled') setContentMap(contentRes.value)
+      if (mediaRes.status === 'fulfilled') setMediaMap(mediaRes.value || {})
+      else setMediaMap({})
+      if (postsRes.status === 'fulfilled') setBlogPosts(postsRes.value)
+      if (docsRes.status === 'fulfilled') setDocuments(docsRes.value)
     } catch (err) {
       console.error('Erro ao carregar dados:', err)
       setMediaMap({})

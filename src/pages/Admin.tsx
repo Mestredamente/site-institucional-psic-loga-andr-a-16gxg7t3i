@@ -60,7 +60,8 @@ export default function Admin() {
   const [blogPosts, setBlogPosts] = useState<BlogPostRecord[]>([])
   const [documents, setDocuments] = useState<DocumentRecord[]>([])
   const [privateNotes, setPrivateNotes] = useState<PrivateNoteRecord[]>([])
-  const [isDataLoading, setIsDataLoading] = useState(true)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [isSyncingBackground, setIsSyncingBackground] = useState(false)
 
   // Modal para Restaurar Conteúdo Padrão
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
@@ -137,40 +138,97 @@ export default function Admin() {
     }
   }
 
-  const loadAllData = useCallback(async () => {
-    if (!isAuthenticated) return
-    setIsDataLoading(true)
-    try {
-      const [contentData, mediaData, postsData, docsData, notesData] = await Promise.all([
-        fetchSiteContent(),
-        fetchSiteMedia(),
-        fetchBlogPosts(false), // todos, incluindo rascunhos
-        fetchDocuments(),
-        fetchPrivateNotes(),
-      ])
-      setContentMap(contentData)
-      setMediaMap(mediaData)
-      setBlogPosts(postsData)
-      setDocuments(docsData)
-      setPrivateNotes(notesData)
+  const loadAllData = useCallback(
+    async (isInitial = false) => {
+      if (!isAuthenticated) return
+      if (isInitial) {
+        setIsInitialLoading(true)
+      } else {
+        setIsSyncingBackground(true)
+      }
 
-      // Aplicar cor de destaque no tema do navegador
-      if (contentData['site_config']?.accent_color) {
-        applyAccentColor(contentData['site_config'].accent_color)
+      try {
+        // Buscar todas as coleções com tratamento de erro e timeout individual
+        const [contentRes, mediaRes, postsRes, docsRes, notesRes] = await Promise.allSettled([
+          fetchSiteContent(),
+          fetchSiteMedia(),
+          fetchBlogPosts(false), // todos, incluindo rascunhos
+          fetchDocuments(),
+          fetchPrivateNotes(),
+        ])
+
+        let hasAnyFailure = false
+
+        if (contentRes.status === 'fulfilled') {
+          setContentMap(contentRes.value)
+          if (contentRes.value['site_config']?.accent_color) {
+            applyAccentColor(contentRes.value['site_config'].accent_color)
+          }
+        } else {
+          hasAnyFailure = true
+          console.error('Erro ao sincronizar site_content:', contentRes.reason)
+        }
+
+        if (mediaRes.status === 'fulfilled') {
+          setMediaMap(mediaRes.value)
+          if (mediaRes.value['favicon']) {
+            applyFavicon(mediaRes.value['favicon'])
+          }
+        } else {
+          hasAnyFailure = true
+          console.error('Erro ao sincronizar site_media:', mediaRes.reason)
+        }
+
+        if (postsRes.status === 'fulfilled') {
+          setBlogPosts(postsRes.value)
+        } else {
+          hasAnyFailure = true
+          console.error('Erro ao sincronizar blog_posts:', postsRes.reason)
+        }
+
+        if (docsRes.status === 'fulfilled') {
+          setDocuments(docsRes.value)
+        } else {
+          hasAnyFailure = true
+          console.error('Erro ao sincronizar documents:', docsRes.reason)
+        }
+
+        if (notesRes.status === 'fulfilled') {
+          setPrivateNotes(notesRes.value)
+        } else {
+          hasAnyFailure = true
+          console.error('Erro ao sincronizar private_notes:', notesRes.reason)
+        }
+
+        if (hasAnyFailure && !isInitial) {
+          toast({
+            variant: 'destructive',
+            title: 'Aviso de sincronização',
+            description: 'Não foi possível sincronizar — tente novamente',
+          })
+        }
+      } catch (err) {
+        console.error('Erro ao buscar dados do admin:', err)
+        if (!isInitial) {
+          toast({
+            variant: 'destructive',
+            title: 'Aviso de sincronização',
+            description: 'Não foi possível sincronizar — tente novamente',
+          })
+        }
+      } finally {
+        if (isInitial) {
+          setIsInitialLoading(false)
+        }
+        setIsSyncingBackground(false)
       }
-      if (mediaData['favicon']) {
-        applyFavicon(mediaData['favicon'])
-      }
-    } catch (err) {
-      console.error('Erro ao buscar dados do admin:', err)
-    } finally {
-      setIsDataLoading(false)
-    }
-  }, [isAuthenticated])
+    },
+    [isAuthenticated],
+  )
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadAllData()
+      loadAllData(true)
     }
   }, [isAuthenticated, loadAllData])
 
@@ -239,6 +297,17 @@ export default function Admin() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Indicador sutil de sincronização em segundo plano */}
+              {isSyncingBackground && (
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sage-50 text-sage-700 text-xs font-medium border border-sage-200 animate-pulse"
+                  title="Atualizando dados em segundo plano..."
+                >
+                  <Loader2 className="w-3 h-3 animate-spin text-sage-600" />
+                  <span>Sincronizando...</span>
+                </div>
+              )}
+
               {/* Exportar Backup JSON */}
               <Button
                 variant="outline"
@@ -428,16 +497,16 @@ export default function Admin() {
               </TabsList>
             </div>
 
-            {isDataLoading ? (
+            {isInitialLoading ? (
               <div className="py-20 flex flex-col items-center justify-center text-warm-500 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-sage-600" />
-                <p className="text-sm">Sincronizando com o backend...</p>
+                <p className="text-sm">Carregando painel administrativo...</p>
               </div>
             ) : (
               <>
                 {/* Aba 1: Conteúdo */}
                 <TabsContent value="texts" className="focus:outline-none">
-                  <EditTextsTab contentMap={contentMap} onRefresh={loadAllData} />
+                  <EditTextsTab contentMap={contentMap} onRefresh={() => loadAllData(false)} />
                 </TabsContent>
 
                 {/* Aba 2: Identidade Visual e Cores */}
@@ -445,28 +514,28 @@ export default function Admin() {
                   <IdentityTab
                     contentMap={contentMap}
                     mediaMap={mediaMap}
-                    onRefresh={loadAllData}
+                    onRefresh={() => loadAllData(false)}
                   />
                 </TabsContent>
 
                 {/* Aba 3: Fotos & Recorte */}
                 <TabsContent value="media" className="focus:outline-none">
-                  <MediaTab mediaMap={mediaMap} onRefresh={loadAllData} />
+                  <MediaTab mediaMap={mediaMap} onRefresh={() => loadAllData(false)} />
                 </TabsContent>
 
                 {/* Aba 4: Blog/Vlog */}
                 <TabsContent value="blog" className="focus:outline-none">
-                  <BlogTab posts={blogPosts} onRefresh={loadAllData} />
+                  <BlogTab posts={blogPosts} onRefresh={() => loadAllData(false)} />
                 </TabsContent>
 
                 {/* Aba 5: Documentos */}
                 <TabsContent value="documents" className="focus:outline-none">
-                  <DocumentsTab documents={documents} onRefresh={loadAllData} />
+                  <DocumentsTab documents={documents} onRefresh={() => loadAllData(false)} />
                 </TabsContent>
 
                 {/* Aba 6: Notas Privadas */}
                 <TabsContent value="notes" className="focus:outline-none">
-                  <PrivateNotesTab notes={privateNotes} onRefresh={loadAllData} />
+                  <PrivateNotesTab notes={privateNotes} onRefresh={() => loadAllData(false)} />
                 </TabsContent>
 
                 {/* Aba 7: Backend & Configurações */}
