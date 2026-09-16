@@ -21,38 +21,49 @@ export default function OrientacaoParental({
   )}`
 
   const defaultPoints = [
-    'Compreensão do desenvolvimento infantil e neurobiologia das emoções',
-    'Manejo de birras, oposição e limites amorosos e consistentes',
-    'Alinhamento da comunicação e rotina entre o casal parental',
-    'Fortalecimento do vínculo afetivo e segurança emocional da criança',
-    'Mediação de momentos de transição escolar ou dinâmica familiar',
+    'Birras e Limites: manejo acolhedor com consistência e sem violência',
+    'Rotina e Sono: estruturação de horários previsíveis que trazem segurança',
+    'Uso Consciente de Telas: equilíbrio digital adaptado a cada fase',
+    'Comunicação Afetiva: diálogos claros que conectam e reduzem conflitos',
+    'Transições Familiares: apoio na chegada de irmãos, separação ou luto',
+    'Autonomia e Segurança Emocional: fortalecendo a autoconfiança da criança',
   ]
 
   const points = content?.points?.length ? content.points : defaultPoints
 
   return (
-    <section id="orientacao-parental" className="py-20 lg:py-28 bg-white border-t border-warm-200">
+    <section
+      id="orientacao-parental"
+      className="py-20 lg:py-28 bg-white border-t border-warm-200 relative"
+    >
+      {/* Linha fina decorativa superior com toque de ouro sutil */}
+      <div className="max-w-xs mx-auto mb-12 gold-divider" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* CARD PRINCIPAL COM DESTAQUE VISUAL DIFERENCIADO (fundo verde-sálvia suave, sombra ampla) */}
+        {/* FAIXA COM FUNDO CONTRASTANTE E DESTAQUE VISUAL COMPLETO */}
         <div className="relative rounded-3xl bg-sage-50/90 border-2 border-sage-200 p-8 sm:p-12 lg:p-16 shadow-[0_16px_50px_rgba(111,162,135,0.14)] overflow-hidden">
           {/* Decoração sutil */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-sage-200/40 rounded-full blur-3xl -z-10 pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-sage-300/30 rounded-full blur-3xl -z-10 pointer-events-none" />
 
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sage-200/80 border border-sage-300 text-xs font-bold text-sage-900 tracking-wider uppercase">
-              <Users className="w-4 h-4 text-sage-700" />
-              <span>Destaque Especial • Apoio à Família</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-[#C9A96A]/40 text-xs font-semibold text-warm-700 tracking-wider uppercase shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#C9A96A]" />
+              <Users className="w-3.5 h-3.5 text-sage-700" />
+              <span>Destaque Especial • Apoio Parental</span>
             </div>
 
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-warm-800 tracking-tight">
               {content?.title || 'Orientação Parental'}
             </h2>
 
-            {/* FRASE EXATA EXIGIDA NO BRIEFING */}
-            <div className="py-3 px-6 rounded-2xl bg-white/80 backdrop-blur border border-sage-200 inline-block shadow-sm">
-              <p className="font-serif text-xl sm:text-2xl md:text-3xl font-semibold text-sage-800 italic">
+            {/* FRASE-ÂNCORA EXATA EXIGIDA NO BRIEFING */}
+            <div className="py-4 px-6 sm:px-8 rounded-2xl bg-white/95 backdrop-blur border border-[#C9A96A]/30 inline-block shadow-sm max-w-2xl">
+              <p className="font-serif text-xl sm:text-2xl md:text-3xl font-semibold text-sage-900 italic leading-snug">
                 "{content?.quote || 'Fortalecendo pais para fortalecer a relação com os filhos'}"
+              </p>
+              <p className="text-xs sm:text-sm text-warm-600 font-medium pt-2 border-t border-[#C9A96A]/20 mt-2">
+                {content?.subtitle || 'Estratégias práticas para desafios da parentalidade'}
               </p>
             </div>
 
@@ -74,15 +85,19 @@ export default function OrientacaoParental({
               </div>
             )}
 
-            {/* Lista de pontos em grid */}
-            <div className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-3xl mx-auto">
+            {/* Lista de pontos em grid (6 tópicos reais) */}
+            <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
               {points.map((point, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-4 rounded-xl bg-white/90 border border-sage-200/80 shadow-xs"
+                  className="flex items-start gap-3 p-4 rounded-xl bg-white/95 border border-sage-200/80 hover:border-[#C9A96A]/50 transition-colors shadow-xs"
                 >
-                  <CheckCircle2 className="w-5 h-5 text-sage-600 shrink-0 mt-0.5" />
-                  <span className="text-sm font-medium text-warm-700 leading-snug">{point}</span>
+                  <div className="w-5 h-5 rounded-full bg-sage-100 border border-sage-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-sage-700" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-warm-700 leading-snug">
+                    {point}
+                  </span>
                 </div>
               ))}
             </div>

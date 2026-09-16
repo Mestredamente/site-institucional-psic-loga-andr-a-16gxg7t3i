@@ -9,14 +9,20 @@ export default function Footer({ crp = 'CRP 14/075954' }: FooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-warm-900 text-warm-200 pt-16 pb-12 border-t border-warm-800">
+    <footer className="bg-warm-900 text-warm-200 pt-16 pb-12 border-t border-warm-800 relative">
+      {/* Detalhe fino dourado decorativo */}
+      <div className="max-w-xs mx-auto mb-10 gold-divider opacity-40" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-warm-800/80">
           {/* Apresentação no footer */}
           <div className="md:col-span-5 space-y-4">
-            <span className="font-serif text-2xl font-bold text-warm-50 tracking-tight block">
-              Andréa Armôa
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96A]" />
+              <span className="font-serif text-2xl font-bold text-warm-50 tracking-tight block">
+                Andréa dos Santos Silva Armôa
+              </span>
+            </div>
             <p className="text-xs uppercase tracking-wider text-sage-300 font-semibold">
               Psicóloga Clínica e Neuropsicóloga • {crp}
             </p>

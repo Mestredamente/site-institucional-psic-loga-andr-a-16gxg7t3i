@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { uploadSiteMedia, deleteSiteMedia } from '@/services/content'
+import { uploadSiteMedia, deleteSiteMedia, compressAndResizeImage } from '@/services/content'
 import { toast } from '@/hooks/use-toast'
 import {
   Upload,
@@ -86,19 +86,34 @@ export default function MediaTab({ mediaMap, onRefresh }: MediaTabProps) {
   const imageRef = useRef<HTMLImageElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  // Abrir o diálogo de corte quando seleciona arquivo
-  const handleSelectFile = (slot: MediaSlot, e: React.ChangeEvent<HTMLInputElement>) => {
+  // Abrir o diálogo de corte quando seleciona arquivo com pré-compressão automática
+  const handleSelectFile = async (slot: MediaSlot, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      setCropImageSrc(reader.result as string)
-      setCropSlot(slot)
-      setZoom(1)
-      setPan({ x: 0, y: 0 })
+    try {
+      // Compressão e redimensionamento automáticos no cliente antes do corte (máx 1920px, ~0.82)
+      const compressed = await compressAndResizeImage(file, 1920, 0.85)
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        setCropImageSrc(reader.result as string)
+        setCropSlot(slot)
+        setZoom(1)
+        setPan({ x: 0, y: 0 })
+      }
+      reader.readAsDataURL(compressed)
+    } catch (err) {
+      console.warn('Erro na pré-compressão, usando original:', err)
+      const reader = new FileReader()
+      reader.onload = () => {
+        setCropImageSrc(reader.result as string)
+        setCropSlot(slot)
+        setZoom(1)
+        setPan({ x: 0, y: 0 })
+      }
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
     // reset input
     e.target.value = ''
   }
@@ -183,7 +198,9 @@ export default function MediaTab({ mediaMap, onRefresh }: MediaTabProps) {
 
       if (!blob) throw new Error('Falha ao processar arquivo recortado.')
 
-      const finalFile = new File([blob], `${cropSlot.key}.jpg`, { type: 'image/jpeg' })
+      // Compressão final de segurança
+      const rawFile = new File([blob], `${cropSlot.key}.jpg`, { type: 'image/jpeg' })
+      const finalFile = await compressAndResizeImage(rawFile, 1600, 0.82)
 
       setUploadingKey(cropSlot.key)
       await uploadSiteMedia(cropSlot.key, finalFile)

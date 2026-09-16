@@ -38,7 +38,11 @@ export default function Faq({ content }: FaqProps) {
     },
     {
       q: 'Como é garantido o sigilo das informações?',
-      a: 'O sigilo profissional é um dever ético absoluto assegurado pelo Código de Ética do Psicólogo. Tudo o que é compartilhado nas sessões permanece estritamente confidencial.',
+      a: 'O sigilo profissional é um dever ético absoluto assegurado pelo Código de Ética do Psicólogo. Tudo o que é compartilhado nas sessões permanece estritamente confidencial entre paciente e profissional.',
+    },
+    {
+      q: 'Como faço para agendar um primeiro horário?',
+      a: 'Basta clicar no botão de WhatsApp aqui no site e enviar uma mensagem. Responderemos informando os horários disponíveis, valores e tirando qualquer dúvida prévia para seu agendamento.',
     },
   ]
 

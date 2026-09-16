@@ -43,10 +43,13 @@ import {
   fetchDocuments,
   fetchPrivateNotes,
   restoreDefaultContent,
+  exportContentBackup,
+  importContentBackup,
 } from '@/services/content'
 import { applyAccentColor, applyFavicon } from '@/lib/theme'
 import { toast } from '@/hooks/use-toast'
 import type { BlogPostRecord, DocumentRecord, PrivateNoteRecord } from '@/types/content'
+import { Download, Upload as UploadIcon } from 'lucide-react'
 
 export default function Admin() {
   const { isAuthenticated, isLoading: authLoading, logout, user } = useAuth()
@@ -62,6 +65,77 @@ export default function Admin() {
   // Modal para Restaurar Conteúdo Padrão
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false)
+
+  // Exportar / Importar Backup JSON
+  const [isExporting, setIsExporting] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [importJsonText, setImportJsonText] = useState('')
+  const [isImporting, setIsImporting] = useState(false)
+
+  const handleExportBackup = async () => {
+    setIsExporting(true)
+    try {
+      const json = await exportContentBackup()
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      const dateStr = new Date().toISOString().split('T')[0]
+      a.href = url
+      a.download = `backup-site-andrea-armoa-${dateStr}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast({
+        title: 'Backup exportado!',
+        description: 'Arquivo .json baixado com sucesso contendo textos, posts e metadados.',
+      })
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao exportar backup',
+        description: err.message || 'Falha ao gerar arquivo.',
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setImportJsonText((event.target?.result as string) || '')
+      setIsImportModalOpen(true)
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  const handleConfirmImport = async () => {
+    if (!importJsonText) return
+    setIsImporting(true)
+    try {
+      const res = await importContentBackup(importJsonText)
+      toast({
+        title: 'Conteúdo importado com sucesso!',
+        description: `${res.count} seções foram atualizadas e publicadas no site.`,
+      })
+      setIsImportModalOpen(false)
+      setImportJsonText('')
+      await loadAllData()
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao importar backup',
+        description: err.message || 'O arquivo fornecido não é válido.',
+      })
+    } finally {
+      setIsImporting(false)
+    }
+  }
 
   const loadAllData = useCallback(async () => {
     if (!isAuthenticated) return
@@ -156,6 +230,40 @@ export default function Admin() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Exportar Backup JSON */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportBackup}
+                disabled={isExporting}
+                title="Baixar backup completo de todos os textos em formato .json"
+                className="border-warm-300 text-warm-700 hover:bg-warm-100 rounded-xl text-xs"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <Download className="w-3.5 h-3.5 mr-1.5 text-warm-600" />
+                )}
+                Exportar JSON
+              </Button>
+
+              {/* Importar Backup JSON */}
+              <label
+                htmlFor="import-backup-file"
+                className="inline-flex items-center justify-center px-3 py-1.5 border border-warm-300 text-warm-700 hover:bg-warm-100 rounded-xl text-xs font-medium cursor-pointer transition-colors"
+                title="Importar backup .json e restaurar conteúdos"
+              >
+                <UploadIcon className="w-3.5 h-3.5 mr-1.5 text-warm-600" />
+                Importar JSON
+              </label>
+              <input
+                id="import-backup-file"
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={handleFileImport}
+              />
+
               {/* Botão Restaurar Conteúdo Padrão */}
               <Button
                 variant="outline"
@@ -164,7 +272,7 @@ export default function Admin() {
                 className="border-warm-300 text-warm-600 hover:bg-warm-100 rounded-xl text-xs"
               >
                 <RotateCcw className="w-3.5 h-3.5 mr-1.5 text-warm-500" />
-                Restaurar Padrão
+                Restaurar Inicial
               </Button>
 
               {/* Botão Ver Site (Abre em nova aba) */}
@@ -323,11 +431,11 @@ export default function Admin() {
             <ShieldCheck className="w-4 h-4 text-sage-600 shrink-0" />
             <span>
               <strong>Proteção de Dados & Sigilo (LGPD):</strong> Painel de uso exclusivo da
-              profissional. Nenhum dado ou prontuário de paciente é armazenado aqui.
+              profissional. Nenhum dado ou prontuário de paciente é armazenado neste sistema.
             </span>
           </div>
 
-          <p className="text-center md:text-right text-warm-400">
+          <p className="text-center md:text-right text-warm-500 font-medium">
             O conteúdo publicado possui finalidade estritamente educativa e informativa, não
             substituindo atendimento psicológico clínico.
           </p>
@@ -375,6 +483,53 @@ export default function Admin() {
                 </>
               ) : (
                 'Sim, Restaurar Textos'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação para Importar Backup JSON */}
+      <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+        <DialogContent className="max-w-md bg-white border-warm-200">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-lg flex items-center gap-2 text-warm-800">
+              <UploadIcon className="w-5 h-5 text-sage-600" />
+              Restaurar Backup a partir de Arquivo JSON?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-warm-600 leading-relaxed pt-2">
+              Você carregou um arquivo de backup válido. Deseja sobrescrever os textos atuais do
+              site com os dados contidos no arquivo?
+              <br />
+              <br />
+              <strong className="text-warm-800">Segurança:</strong> Suas alterações anteriores serão
+              armazenadas no Histórico de Versões e você poderá desfazer se necessário.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsImportModalOpen(false)
+                setImportJsonText('')
+              }}
+              disabled={isImporting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmImport}
+              disabled={isImporting}
+              className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+            >
+              {isImporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Importando...
+                </>
+              ) : (
+                'Sim, Importar e Publicar'
               )}
             </Button>
           </DialogFooter>

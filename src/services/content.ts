@@ -5,6 +5,7 @@ import type {
   BlogPostRecord,
   DocumentRecord,
   PrivateNoteRecord,
+  ContentVersionRecord,
 } from '@/types/content'
 
 export async function fetchSiteContent(): Promise<Record<string, any>> {
@@ -23,11 +24,80 @@ export async function fetchSiteContent(): Promise<Record<string, any>> {
   }
 }
 
-export async function updateSiteContent(key: string, content: any): Promise<SiteContentRecord> {
+/**
+ * Salva uma versão anterior na coleção content_versions antes de atualizar.
+ * Isso garante histórico e botão "Desfazer" à prova de erros para a profissional.
+ */
+export async function saveContentVersion(key: string, content: any, note?: string): Promise<void> {
+  try {
+    if (!content) return
+    await pb.collection('content_versions').create({
+      key,
+      content,
+      note: note || `Backup automático antes de salvar "${key}"`,
+    })
+
+    // Manter as últimas 20 versões por seção para evitar crescimento desnecessário
+    const versions = await pb.collection('content_versions').getList<ContentVersionRecord>(1, 30, {
+      filter: `key="${key}"`,
+      sort: '-created',
+    })
+    if (versions.items.length > 20) {
+      const toDelete = versions.items.slice(20)
+      for (const item of toDelete) {
+        try {
+          await pb.collection('content_versions').delete(item.id)
+        } catch {
+          /* intentionally ignored */
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Aviso: Não foi possível registrar versão de backup:', err)
+  }
+}
+
+export async function fetchContentVersions(key?: string): Promise<ContentVersionRecord[]> {
+  try {
+    const filter = key ? `key="${key}"` : ''
+    return await pb.collection('content_versions').getFullList<ContentVersionRecord>({
+      filter,
+      sort: '-created',
+    })
+  } catch (err) {
+    console.error('Erro ao buscar content_versions:', err)
+    return []
+  }
+}
+
+/**
+ * Restaura uma versão anterior específica da coleção content_versions
+ */
+export async function restoreContentVersion(versionId: string): Promise<SiteContentRecord> {
+  const version = await pb.collection('content_versions').getOne<ContentVersionRecord>(versionId)
+  // Atualiza site_content sem criar uma versão idêntica
+  return await updateSiteContent(version.key, version.content, false)
+}
+
+export async function updateSiteContent(
+  key: string,
+  content: any,
+  trackVersion = true,
+): Promise<SiteContentRecord> {
   try {
     const existing = await pb
       .collection('site_content')
       .getFirstListItem<SiteContentRecord>(`key="${key}"`)
+
+    // Salva a versão anterior se estiver habilitado e houver conteúdo existente
+    if (trackVersion && existing.content) {
+      await saveContentVersion(
+        key,
+        existing.content,
+        `Alteração realizada em ${new Date().toLocaleString('pt-BR')}`,
+      )
+    }
+
     return await pb.collection('site_content').update<SiteContentRecord>(existing.id, {
       content,
     })
@@ -137,16 +207,18 @@ export async function restoreDefaultContent(): Promise<void> {
     },
     orientacao_parental: {
       title: 'Orientação Parental',
-      quote: 'Fortalecendo pais para fortalecer a relação com os filhos.',
+      quote: 'Fortalecendo pais para fortalecer a relação com os filhos',
+      subtitle: 'Estratégias práticas para desafios da parentalidade',
       lead: 'A parentalidade é uma das jornadas mais desafiadoras e enriquecedoras da vida. Não existe manual perfeito, mas existe apoio qualificado e acolhedor.',
       description:
         'A orientação parental é um serviço direcionado a mães, pais e cuidadores que buscam compreender os desafios de desenvolvimento de seus filhos, estabelecer limites saudáveis sem violência, promover uma comunicação afetiva e resolver impasses comportamentais e emocionais na rotina familiar.',
       points: [
-        'Compreensão do desenvolvimento infantil e neurobiologia das emoções',
-        'Manejo de birras, oposição e limites amorosos e consistentes',
-        'Alinhamento da comunicação e rotina entre o casal parental',
-        'Fortalecimento do vínculo afetivo e segurança emocional da criança',
-        'Mediação de momentos de transição escolar ou dinâmica familiar',
+        'Birras e Limites: manejo acolhedor com consistência e sem violência',
+        'Rotina e Sono: estruturação de horários previsíveis que trazem segurança',
+        'Uso Consciente de Telas: equilíbrio digital adaptado a cada fase',
+        'Comunicação Afetiva: diálogos claros que conectam e reduzem conflitos',
+        'Transições Familiares: apoio na chegada de irmãos, separação ou luto',
+        'Autonomia e Segurança Emocional: fortalecendo a autoconfiança da criança',
       ],
       cta_text: 'Quero agendar uma Orientação Parental',
     },
@@ -177,6 +249,12 @@ export async function restoreDefaultContent(): Promise<void> {
           summary:
             'Famílias que desejam clareza e ferramentas práticas para educar com afeto, firmeza e presença consciente.',
           badge: 'Parentalidade',
+        },
+        {
+          name: 'Famílias',
+          summary:
+            'Acolhimento de impasses relacionais, transições de ciclo familiar, alinhamento de convivência e fortalecimento de vínculos afetivos coletivos.',
+          badge: 'Sistêmico & Vínculos',
         },
       ],
     },
@@ -213,6 +291,28 @@ export async function restoreDefaultContent(): Promise<void> {
     como_funciona: {
       title: 'Como Funciona o Atendimento',
       subtitle: 'Modalidades pensadas para se adaptar à sua realidade com total sigilo e ética',
+      etapas: [
+        {
+          step: '01',
+          title: 'Primeiro Contato',
+          desc: 'Contato inicial rápido via WhatsApp para entender sua busca, tirar dúvidas pontuais e verificar disponibilidade de agenda.',
+        },
+        {
+          step: '02',
+          title: 'Sessão de Acolhimento',
+          desc: 'Primeiro encontro dedicado a ouvir sua história com calma, entender as queixas e estabelecer um vínculo de confiança mútuo.',
+        },
+        {
+          step: '03',
+          title: 'Plano de Cuidado',
+          desc: 'Definição conjunta de objetivos terapêuticos personalizados, alinhamento de frequência e estratégias clínicas ou avaliativas.',
+        },
+        {
+          step: '04',
+          title: 'Acompanhamento Contínuo',
+          desc: 'Sessões periódicas com foco no desenvolvimento de autonomia, ressignificação de vivências e consolidação do bem-estar.',
+        },
+      ],
       modalities: [
         {
           title: 'Atendimento Presencial',
@@ -271,6 +371,10 @@ export async function restoreDefaultContent(): Promise<void> {
         {
           q: 'Como é garantido o sigilo das informações?',
           a: 'O sigilo profissional é um dever ético absoluto assegurado pelo Código de Ética do Psicólogo. Tudo o que é compartilhado nas sessões permanece estritamente confidencial.',
+        },
+        {
+          q: 'Como faço para agendar um primeiro horário?',
+          a: 'Basta clicar no botão de WhatsApp aqui no site e enviar uma mensagem. Responderemos informando os horários disponíveis, valores e tirando qualquer dúvida prévia para seu agendamento.',
         },
       ],
     },
@@ -388,4 +492,133 @@ export function getFileUrl(
 ): string {
   if (!filename) return ''
   return pb.files.getURL(record as any, filename)
+}
+
+/**
+ * Exporta todo o conteúdo do site (site_content, blog_posts, documents metadata) em formato JSON.
+ * Não inclui dados clínicos (inexistentes no sistema por ética) nem notas confidenciais por padrão.
+ */
+export async function exportContentBackup(): Promise<string> {
+  const [contentRecords, blogPosts, documents] = await Promise.all([
+    pb.collection('site_content').getFullList<SiteContentRecord>(),
+    pb.collection('blog_posts').getFullList<BlogPostRecord>(),
+    pb.collection('documents').getFullList<DocumentRecord>(),
+  ])
+
+  const contentMap: Record<string, any> = {}
+  for (const rec of contentRecords) {
+    contentMap[rec.key] = rec.content
+  }
+
+  const backupData = {
+    version: '1.0',
+    exported_at: new Date().toISOString(),
+    site_name: 'Andréa dos Santos Silva Armôa - Psicóloga Clínica & Neuropsicóloga',
+    site_content: contentMap,
+    blog_posts: blogPosts.map((p) => ({
+      title: p.title,
+      type: p.type,
+      content: p.content,
+      published: p.published,
+      media_url: p.media_url,
+    })),
+    documents: documents.map((d) => ({
+      title: d.title,
+      description: d.description,
+    })),
+  }
+
+  return JSON.stringify(backupData, null, 2)
+}
+
+/**
+ * Importa um backup JSON e restaura os conteúdos em site_content
+ */
+export async function importContentBackup(
+  jsonData: string,
+): Promise<{ success: boolean; count: number }> {
+  const parsed = JSON.parse(jsonData)
+  if (!parsed || typeof parsed !== 'object' || !parsed.site_content) {
+    throw new Error('Arquivo de backup inválido: chave "site_content" ausente.')
+  }
+
+  let count = 0
+  for (const [key, content] of Object.entries(parsed.site_content)) {
+    await updateSiteContent(key, content, true)
+    count++
+  }
+
+  return { success: true, count }
+}
+
+/**
+ * Pipeline de compressão e redimensionamento automático de imagens no navegador.
+ * Garante que fotos enviadas pela profissional sejam leves, rápidas e não sobrecarreguem o servidor.
+ */
+export async function compressAndResizeImage(
+  file: File,
+  maxDimension = 1920,
+  quality = 0.82,
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    // Se não for imagem, devolve o arquivo original
+    if (!file.type.startsWith('image/')) {
+      return resolve(file)
+    }
+
+    const img = document.createElement('img')
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      img.src = e.target?.result as string
+    }
+    reader.onerror = (err) => reject(err)
+
+    img.onload = () => {
+      let { width, height } = img
+
+      // Redimensionamento proporcional se exceder maxDimension
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width)
+          width = maxDimension
+        } else {
+          width = Math.round((width * maxDimension) / height)
+          height = maxDimension
+        }
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return resolve(file)
+      }
+
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            return resolve(file)
+          }
+          const cleanName = file.name.replace(/\.[^/.]+$/, '') + '.jpg'
+          const compressedFile = new File([blob], cleanName, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        quality,
+      )
+    }
+
+    img.onerror = () => resolve(file)
+    reader.readAsDataURL(file)
+  })
 }

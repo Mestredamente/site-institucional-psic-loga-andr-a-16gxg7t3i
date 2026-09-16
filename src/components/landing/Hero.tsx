@@ -35,7 +35,8 @@ export default function Hero({
           {/* Coluna Texto (7 colunas no desktop) */}
           <div className="lg:col-span-7 space-y-6 lg:pr-8 text-center lg:text-left animate-fade-in-up">
             {content?.badge && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sage-100/80 border border-sage-300 text-xs font-semibold text-sage-800 tracking-wide">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#C9A96A]/40 text-xs font-semibold text-warm-700 tracking-wide shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-[#C9A96A]" />
                 <Heart className="w-3.5 h-3.5 text-sage-600 fill-sage-600" />
                 <span>{content.badge}</span>
               </div>
@@ -53,12 +54,14 @@ export default function Hero({
               </p>
             </div>
 
-            <p className="text-lg sm:text-xl text-warm-600 font-light leading-relaxed max-w-2xl mx-auto lg:mx-0 border-l-0 lg:border-l-2 lg:border-sage-300 lg:pl-4 italic">
-              "
-              {content?.welcoming_phrase ||
-                'Aqui, você encontra um espaço seguro, acolhedor e ético para se ouvir, se compreender e se cuidar.'}
-              "
-            </p>
+            <div className="border-l-2 border-l-[#C9A96A] pl-4 py-1 text-left">
+              <p className="text-base sm:text-lg text-warm-600 font-serif italic leading-relaxed max-w-2xl">
+                "
+                {content?.welcoming_phrase ||
+                  'Aqui, você encontra um espaço seguro, acolhedor e ético para se ouvir, se compreender e se cuidar.'}
+                "
+              </p>
+            </div>
 
             {/* CTAs */}
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">

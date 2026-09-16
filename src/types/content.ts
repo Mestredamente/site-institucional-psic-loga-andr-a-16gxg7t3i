@@ -29,6 +29,7 @@ export interface PsicoterapiaContent {
 export interface OrientacaoParentalContent {
   title: string
   quote: string
+  subtitle?: string
   lead: string
   description: string
   points: string[]
@@ -54,9 +55,16 @@ export interface BeneficiosContent {
   }>
 }
 
+export interface ComoFuncionaEtapa {
+  step: string
+  title: string
+  desc: string
+}
+
 export interface ComoFuncionaContent {
   title: string
   subtitle: string
+  etapas?: ComoFuncionaEtapa[]
   modalities: Array<{
     title: string
     desc: string
@@ -96,6 +104,15 @@ export interface SiteConfigContent {
   site_description?: string
   admin_email?: string
   updated_at?: string
+}
+
+export interface ContentVersionRecord {
+  id: string
+  key: string
+  content: any
+  note?: string
+  created: string
+  updated: string
 }
 
 export interface SiteContentRecord {

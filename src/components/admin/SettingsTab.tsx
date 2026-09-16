@@ -292,6 +292,12 @@ export default function SettingsTab() {
                     </span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-warm-50 border border-warm-200">
+                    <span className="font-bold text-warm-800 block">content_versions</span>
+                    <span className="text-[11px] text-warm-500">
+                      Histórico de versões e Desfazer
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-warm-50 border border-warm-200">
                     <span className="font-bold text-warm-800 block">users</span>
                     <span className="text-[11px] text-warm-500">Auth collection com bcrypt</span>
                   </div>

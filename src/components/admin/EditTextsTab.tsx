@@ -1,13 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { updateSiteContent } from '@/services/content'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { updateSiteContent, fetchContentVersions, restoreContentVersion } from '@/services/content'
 import { toast } from '@/hooks/use-toast'
-import { Save, Plus, Trash2, CheckCircle2, Loader2 } from 'lucide-react'
+import {
+  Save,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Loader2,
+  History,
+  Undo2,
+  Eye,
+  AlertCircle,
+  Clock,
+  Sparkles,
+} from 'lucide-react'
+import type { ContentVersionRecord } from '@/types/content'
 
 interface EditTextsTabProps {
   contentMap: Record<string, any>
@@ -18,6 +39,19 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
   const [activeSection, setActiveSection] = useState('hero')
   const [isSaving, setIsSaving] = useState(false)
   const [savingKey, setSavingKey] = useState<string | null>(null)
+
+  // Histórico de Versões e Desfazer
+  const [versions, setVersions] = useState<ContentVersionRecord[]>([])
+  const [isVersionsOpen, setIsVersionsOpen] = useState(false)
+  const [selectedVersionSection, setSelectedVersionSection] = useState('hero')
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false)
+  const [isRestoringVersion, setIsRestoringVersion] = useState(false)
+
+  // Modal de Pré-visualização antes de publicar
+  const [previewModalOpen, setPreviewModalOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<{ key: string; data: any; label: string } | null>(
+    null,
+  )
 
   // Estados locais para cada seção
   const [hero, setHero] = useState(
@@ -84,15 +118,17 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
     contentMap['orientacao_parental'] || {
       title: 'Orientação Parental',
       quote: 'Fortalecendo pais para fortalecer a relação com os filhos',
-      lead: 'A parentalidade é uma das jornadas mais desafiadoras e enriquecedoras da vida.',
+      subtitle: 'Estratégias práticas para desafios da parentalidade',
+      lead: 'A parentalidade é uma das jornadas mais desafiadoras e enriquecedoras da vida. Não existe manual perfeito, mas existe apoio qualificado e acolhedor.',
       description:
         'A orientação parental é um serviço direcionado a mães, pais e cuidadores que buscam compreender os desafios de desenvolvimento de seus filhos, estabelecer limites saudáveis sem violência e fortalecer vínculos.',
       points: [
-        'Compreensão do desenvolvimento infantil e neurobiologia das emoções',
-        'Manejo de birras, oposição e limites amorosos e consistentes',
-        'Alinhamento da comunicação e rotina entre o casal parental',
-        'Fortalecimento do vínculo afetivo e segurança emocional da criança',
-        'Mediação de momentos de transição escolar ou dinâmica familiar',
+        'Birras e Limites: manejo acolhedor com consistência e sem violência',
+        'Rotina e Sono: estruturação de horários previsíveis que trazem segurança',
+        'Uso Consciente de Telas: equilíbrio digital adaptado a cada fase',
+        'Comunicação Afetiva: diálogos claros que conectam e reduzem conflitos',
+        'Transições Familiares: apoio na chegada de irmãos, separação ou luto',
+        'Autonomia e Segurança Emocional: fortalecendo a autoconfiança da criança',
       ],
       cta_text: 'Quero agendar uma Orientação Parental',
     },
@@ -156,6 +192,28 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
     contentMap['como_funciona'] || {
       title: 'Como Funciona o Atendimento',
       subtitle: 'Modalidades pensadas para se adaptar à sua realidade com total sigilo e ética',
+      etapas: [
+        {
+          step: '01',
+          title: 'Primeiro Contato',
+          desc: 'Mensagem inicial via WhatsApp para entender sua busca, tirar dúvidas e checar horários disponíveis.',
+        },
+        {
+          step: '02',
+          title: 'Sessão de Acolhimento',
+          desc: 'Primeiro encontro dedicado à escuta qualificada da sua queixa e alinhamento do vínculo de confiança.',
+        },
+        {
+          step: '03',
+          title: 'Plano de Cuidado',
+          desc: 'Definição conjunta de metas terapêuticas, formato (presencial ou online) e frequência das sessões.',
+        },
+        {
+          step: '04',
+          title: 'Acompanhamento Contínuo',
+          desc: 'Desenvolvimento de recursos emocionais, ressignificação de vivências e autonomia para o dia a dia.',
+        },
+      ],
       modalities: [
         {
           title: 'Atendimento Presencial',
@@ -188,15 +246,39 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
   const [faq, setFaq] = useState(
     contentMap['faq'] || {
       title: 'Perguntas Frequentes',
-      subtitle: 'Tire suas principais dúvidas sobre o processo de psicoterapia',
+      subtitle: 'Tire suas principais dúvidas sobre o processo de psicoterapia e acompanhamento',
       questions: [
         {
           q: 'Como funciona a primeira consulta?',
-          a: 'A primeira sessão é um momento de acolhimento e conhecimento mútuo.',
+          a: 'A primeira sessão é um momento de acolhimento e conhecimento mútuo. Nela, conversaremos sobre o que te motivou a buscar ajuda, suas expectativas e dúvidas. Também alinhamos como funcionará o processo, frequência dos encontros e horários.',
         },
         {
-          q: 'Qual é a duração das sessões?',
-          a: 'As sessões têm duração de 50 minutos semanais.',
+          q: 'Qual é a duração e frequência das sessões?',
+          a: 'As sessões individuais têm duração de 50 minutos e geralmente ocorrem com frequência semanal, garantindo a continuidade necessária para o processo terapêutico.',
+        },
+        {
+          q: 'O atendimento psicológico online é tão eficaz quanto o presencial?',
+          a: 'Sim. Estudos e a regulamentação do Conselho Federal de Psicologia (CFP) comprovam que o atendimento online oferece a mesma eficácia clínica do presencial, com a comodidade de você ser atendido no conforto e segurança do seu ambiente.',
+        },
+        {
+          q: 'Você atende por convênio ou plano de saúde?',
+          a: 'Os atendimentos são particulares. No entanto, forneço recibo detalhado com CRP para que você possa solicitar o reembolso integral ou parcial junto ao seu plano de saúde, caso ele ofereça essa modalidade.',
+        },
+        {
+          q: 'Como a Orientação Parental se diferencia da psicoterapia da criança?',
+          a: 'A orientação parental foca diretamente nos pais e cuidadores, trabalhando estratégias educativas, comunicação e rotina familiar. Em muitos casos, mudanças orientadas na postura dos adultos resolvem demandas da criança sem que seja necessária uma psicoterapia infantil prolongada.',
+        },
+        {
+          q: 'O que é a Avaliação Neuropsicológica e quando ela é indicada?',
+          a: 'É uma avaliação especializada que mapeia o funcionamento do cérebro em relação ao comportamento e cognição (atenção, memória, linguagem, funções executivas). É indicada quando há suspeita de TDAH, dificuldades de aprendizagem, alterações de memória ou para direcionar tratamentos multidisciplinares.',
+        },
+        {
+          q: 'Como é garantido o sigilo das informações?',
+          a: 'O sigilo profissional é um dever ético absoluto assegurado pelo Código de Ética do Psicólogo. Tudo o que é compartilhado nas sessões permanece estritamente confidencial.',
+        },
+        {
+          q: 'Como faço para agendar um primeiro horário?',
+          a: 'Basta clicar no botão de WhatsApp aqui no site e enviar uma mensagem. Responderemos informando os horários disponíveis, valores e tirando qualquer dúvida prévia para seu agendamento.',
         },
       ],
     },
@@ -220,22 +302,56 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
     },
   )
 
-  const handleSave = async (key: string, data: any) => {
+  // Validação de campos obrigatórios antes de abrir pré-visualização ou salvar
+  const validateSection = (key: string, data: any): string | null => {
+    if (key === 'hero') {
+      if (!data.title?.trim()) return 'O Nome Principal é obrigatório.'
+      if (!data.subtitle?.trim()) return 'O Subtítulo Profissional é obrigatório.'
+      if (!data.crp?.trim()) return 'O Registro CRP é obrigatório.'
+    } else if (key === 'sobre') {
+      if (!data.title?.trim()) return 'O Título da seção é obrigatório.'
+    } else if (key === 'orientacao_parental') {
+      if (!data.quote?.trim()) return 'A frase de destaque (quote) é obrigatória.'
+    } else if (key === 'contato') {
+      if (!data.whatsapp?.trim()) return 'O número de WhatsApp é obrigatório.'
+    }
+    return null
+  }
+
+  const handleOpenPreview = (key: string, data: any, label: string) => {
+    const error = validateSection(key, data)
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Campo obrigatório ausente',
+        description: error,
+      })
+      return
+    }
+    setPreviewData({ key, data, label })
+    setPreviewModalOpen(true)
+  }
+
+  const handleExecuteSave = async () => {
+    if (!previewData) return
+    const { key, data } = previewData
     setIsSaving(true)
     setSavingKey(key)
     try {
-      await updateSiteContent(key, data)
+      await updateSiteContent(key, data, true)
       toast({
-        title: 'Publicado no site com sucesso!',
-        description: `As alterações da seção "${key}" já estão visíveis para todos os visitantes.`,
+        title: 'Publicado com sucesso!',
+        description: `As alterações da seção "${previewData.label}" foram salvas no backend e estão ativas para todos os visitantes.`,
       })
+      setPreviewModalOpen(false)
+      setPreviewData(null)
       onRefresh()
     } catch (err: any) {
       console.error('Erro ao salvar seção:', err)
       toast({
         variant: 'destructive',
-        title: 'Erro ao salvar',
-        description: err.message || 'Ocorreu um erro ao atualizar os dados.',
+        title: 'Erro ao salvar alterações',
+        description: err.message || 'Ocorreu uma falha na comunicação com o backend.',
       })
     } finally {
       setIsSaving(false)
@@ -243,15 +359,88 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
     }
   }
 
+  // Carregar histórico de versões de uma seção
+  const handleOpenVersions = async (sectionKey: string) => {
+    setSelectedVersionSection(sectionKey)
+    setIsVersionsOpen(true)
+    setIsLoadingVersions(true)
+    try {
+      const v = await fetchContentVersions(sectionKey)
+      setVersions(v)
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao buscar versões',
+        description: err.message,
+      })
+    } finally {
+      setIsLoadingVersions(false)
+    }
+  }
+
+  // Desfazer e restaurar versão selecionada em um clique
+  const handleRestoreVersion = async (version: ContentVersionRecord) => {
+    setIsRestoringVersion(true)
+    try {
+      await restoreContentVersion(version.id)
+
+      // Atualiza o estado local correspondente
+      if (version.key === 'hero') setHero(version.content)
+      else if (version.key === 'sobre') setSobre(version.content)
+      else if (version.key === 'psicoterapia') setPsicoterapia(version.content)
+      else if (version.key === 'orientacao_parental') setOrientacao(version.content)
+      else if (version.key === 'para_quem') setParaQuem(version.content)
+      else if (version.key === 'beneficios') setBeneficios(version.content)
+      else if (version.key === 'como_funciona') setComoFunciona(version.content)
+      else if (version.key === 'faq') setFaq(version.content)
+      else if (version.key === 'contato') setContato(version.content)
+
+      toast({
+        title: 'Versão restaurada com sucesso!',
+        description: `O site voltou ao estado gravado em ${new Date(version.created).toLocaleString('pt-BR')}.`,
+      })
+      setIsVersionsOpen(false)
+      onRefresh()
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao desfazer alteração',
+        description: err.message || 'Não foi possível restaurar esta versão.',
+      })
+    } finally {
+      setIsRestoringVersion(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-serif text-2xl font-bold text-warm-700">Editar Textos do Site</h2>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-serif text-2xl font-bold text-warm-700">Editar Textos do Site</h2>
+            <span className="text-[11px] font-medium bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
+              À prova de erro
+            </span>
+          </div>
           <p className="text-sm text-warm-500">
-            Altere os títulos, descrições, itens e dados de contato que aparecem na página pública.
+            Altere os textos com segurança. Toda alteração cria uma versão anterior com botão{' '}
+            <strong>"Desfazer"</strong> imediato e pré-visualização antes de publicar.
           </p>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            handleOpenVersions(
+              activeSection === 'orientacao' ? 'orientacao_parental' : activeSection,
+            )
+          }
+          className="rounded-xl border-warm-300 text-warm-700 hover:bg-warm-100 text-xs shrink-0"
+        >
+          <History className="w-3.5 h-3.5 mr-1.5 text-sage-700" />
+          Histórico & Desfazer ({activeSection})
+        </Button>
       </div>
 
       <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
@@ -350,14 +539,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 </div>
               </div>
 
-              <Button
-                onClick={() => handleSave('hero', hero)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Seção Hero
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('hero', hero, 'Hero (Topo)')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Hero
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('hero')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -426,14 +626,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 ))}
               </div>
 
-              <Button
-                onClick={() => handleSave('sobre', sobre)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Sobre Mim
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('sobre', sobre, 'Sobre Mim')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Sobre Mim
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('sobre')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -507,14 +718,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 </div>
               </div>
 
-              <Button
-                onClick={() => handleSave('psicoterapia', psicoterapia)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Psicoterapia
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('psicoterapia', psicoterapia, 'Psicoterapia')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Psicoterapia
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('psicoterapia')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -529,11 +751,36 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
               <CardDescription>Seção em destaque verde-sálvia no site público.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Título da Seção</Label>
+                  <Input
+                    value={orientacao.title || ''}
+                    onChange={(e) => setOrientacao({ ...orientacao, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Subtítulo de Estratégias</Label>
+                  <Input
+                    value={orientacao.subtitle || ''}
+                    onChange={(e) => setOrientacao({ ...orientacao, subtitle: e.target.value })}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
-                <Label>Frase de Destaque Exata (Citação)</Label>
+                <Label>Frase-Âncora em Destaque Exata (Citação)</Label>
                 <Input
                   value={orientacao.quote || ''}
                   onChange={(e) => setOrientacao({ ...orientacao, quote: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Texto de Introdução (Lead)</Label>
+                <Input
+                  value={orientacao.lead || ''}
+                  onChange={(e) => setOrientacao({ ...orientacao, lead: e.target.value })}
                 />
               </div>
 
@@ -594,14 +841,27 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 />
               </div>
 
-              <Button
-                onClick={() => handleSave('orientacao_parental', orientacao)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Orientação Parental
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() =>
+                    handleOpenPreview('orientacao_parental', orientacao, 'Orientação Parental')
+                  }
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Orientação Parental
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('orientacao_parental')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -671,14 +931,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 ))}
               </div>
 
-              <Button
-                onClick={() => handleSave('para_quem', paraQuem)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Para Quem
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('para_quem', paraQuem, 'Para Quem')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Para Quem
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('para_quem')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -773,14 +1044,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 </div>
               </div>
 
-              <Button
-                onClick={() => handleSave('beneficios', beneficios)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Benefícios
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('beneficios', beneficios, 'Benefícios')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Benefícios
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('beneficios')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -865,14 +1147,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 ))}
               </div>
 
-              <Button
-                onClick={() => handleSave('como_funciona', comoFunciona)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Modalidades
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('como_funciona', comoFunciona, 'Como Funciona')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Como Funciona
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('como_funciona')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -969,14 +1262,25 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 ))}
               </div>
 
-              <Button
-                onClick={() => handleSave('faq', faq)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar FAQ
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('faq', faq, 'Perguntas Frequentes (FAQ)')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar FAQ
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('faq')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1070,18 +1374,188 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                 />
               </div>
 
-              <Button
-                onClick={() => handleSave('contato', contato)}
-                disabled={isSaving}
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Contato & Mapa
-              </Button>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={() => handleOpenPreview('contato', contato, 'Contato & Localização')}
+                  disabled={isSaving}
+                  className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Pré-visualizar e Publicar Contato & Mapa
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenVersions('contato')}
+                  className="rounded-xl text-xs"
+                >
+                  <History className="w-3.5 h-3.5 mr-1 text-warm-500" />
+                  Ver Histórico
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* DIALOG DE PRÉ-VISUALIZAÇÃO ANTES DE PUBLICAR */}
+      <Dialog open={previewModalOpen} onOpenChange={setPreviewModalOpen}>
+        <DialogContent className="max-w-2xl bg-white border-warm-200">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl flex items-center gap-2 text-warm-800">
+              <Eye className="w-5 h-5 text-sage-600" />
+              Pré-visualização: {previewData?.label}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-warm-600 leading-relaxed">
+              Confira os dados que serão publicados no site. Se estiver tudo certo, clique em{' '}
+              <strong>"Confirmar e Publicar Globalmente"</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewData && (
+            <div className="max-h-[60vh] overflow-y-auto p-4 rounded-xl bg-warm-50 border border-warm-200 space-y-3 text-xs">
+              <div className="space-y-1">
+                <span className="font-bold text-warm-800 uppercase tracking-wider text-[10px]">
+                  Resumo dos campos preenchidos:
+                </span>
+                <div className="bg-white p-3 rounded-lg border border-warm-200 space-y-1.5">
+                  {Object.entries(previewData.data).map(([k, val]) => {
+                    if (Array.isArray(val)) {
+                      return (
+                        <div key={k} className="text-warm-700">
+                          <strong className="text-warm-900">{k}:</strong> {val.length} itens na
+                          lista
+                        </div>
+                      )
+                    }
+                    if (typeof val === 'string' && val.length > 120) {
+                      return (
+                        <div key={k} className="text-warm-700">
+                          <strong className="text-warm-900">{k}:</strong> {val.substring(0, 120)}...
+                        </div>
+                      )
+                    }
+                    return (
+                      <div key={k} className="text-warm-700">
+                        <strong className="text-warm-900">{k}:</strong> {String(val || '—')}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] border border-emerald-200">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span>
+                  Todos os campos obrigatórios validados com sucesso. Uma versão de backup anterior
+                  será gravada automaticamente no histórico.
+                </span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setPreviewModalOpen(false)}
+              disabled={isSaving}
+            >
+              Voltar e Editar
+            </Button>
+            <Button
+              onClick={handleExecuteSave}
+              disabled={isSaving}
+              className="bg-sage-600 hover:bg-sage-700 text-white rounded-xl"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Publicando no Servidor...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Confirmar e Publicar Globalmente
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG DE HISTÓRICO DE VERSÕES COM BOTÃO DESFAZER */}
+      <Dialog open={isVersionsOpen} onOpenChange={setIsVersionsOpen}>
+        <DialogContent className="max-w-2xl bg-white border-warm-200">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl flex items-center gap-2 text-warm-800">
+              <History className="w-5 h-5 text-sage-600" />
+              Histórico de Versões & Desfazer: "{selectedVersionSection}"
+            </DialogTitle>
+            <DialogDescription className="text-xs text-warm-600 leading-relaxed">
+              Cada vez que você salva uma seção, uma versão anterior é arquivada. Se cometer algum
+              engano, clique em <strong>"Desfazer (Restaurar)"</strong> para recuperar o texto
+              anterior sem risco de quebrar o site.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingVersions ? (
+            <div className="py-12 flex flex-col items-center justify-center text-warm-500 gap-2">
+              <Loader2 className="w-6 h-6 animate-spin text-sage-600" />
+              <p className="text-xs">Carregando histórico do servidor...</p>
+            </div>
+          ) : versions.length === 0 ? (
+            <div className="py-8 text-center text-warm-500 text-xs bg-warm-50 rounded-xl p-4 border border-warm-200">
+              Nenhuma versão anterior gravada para esta seção ainda. Quando você editar e salvar, o
+              histórico aparecerá aqui.
+            </div>
+          ) : (
+            <div className="max-h-[55vh] overflow-y-auto space-y-3 pt-2">
+              {versions.map((ver, idx) => (
+                <div
+                  key={ver.id}
+                  className="p-4 rounded-xl border border-warm-200 bg-warm-50/70 hover:bg-white transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-sage-700" />
+                      <span className="font-semibold text-xs text-warm-800">
+                        {new Date(ver.created).toLocaleString('pt-BR')}
+                      </span>
+                      {idx === 0 && (
+                        <span className="text-[10px] bg-sage-200 text-sage-900 px-2 py-0.5 rounded-full font-medium">
+                          Mais Recente
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-warm-500">{ver.note || 'Backup automático'}</p>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRestoreVersion(ver)}
+                    disabled={isRestoringVersion}
+                    className="border-sage-400 text-sage-800 hover:bg-sage-100 rounded-xl text-xs shrink-0"
+                  >
+                    {isRestoringVersion ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                    ) : (
+                      <Undo2 className="w-3.5 h-3.5 mr-1.5 text-sage-700" />
+                    )}
+                    Desfazer para esta Versão
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <DialogFooter className="pt-2">
+            <Button variant="outline" onClick={() => setIsVersionsOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

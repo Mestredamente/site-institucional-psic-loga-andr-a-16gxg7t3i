@@ -55,9 +55,12 @@ export default function Header({
             <img src={logoUrl} alt="Andréa Armôa" className="h-10 w-auto object-contain" />
           ) : (
             <div className="flex flex-col">
-              <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-700 group-hover:text-warm-900 transition-colors">
-                Andréa Armôa
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-800 group-hover:text-warm-900 transition-colors">
+                  Andréa Armôa
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C9A96A]" />
+              </div>
               <span className="text-[11px] uppercase tracking-wider text-warm-500 font-medium">
                 Psicóloga & Neuropsicóloga • CRP 14/075954
               </span>
