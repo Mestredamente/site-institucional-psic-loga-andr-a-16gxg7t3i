@@ -16,13 +16,17 @@ export default function OrientacaoParental({
   content,
   photoUrl,
   isLoadingMedia,
-  whatsappPhone = '5511999998888',
+  whatsappPhone = '',
   whatsappMessage = '',
 }: OrientacaoParentalProps) {
-  const cleanPhone = whatsappPhone.replace(/\D/g, '')
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-    whatsappMessage || 'Olá, Andréa! Gostaria de saber mais sobre a Orientação Parental.',
-  )}`
+  const cleanPhone = (whatsappPhone || '').replace(/\D/g, '')
+  const isSuspicious = /^5{0,2}1{0,2}9{4,}/.test(cleanPhone) || cleanPhone.length < 10
+  const hasValidPhone = Boolean(cleanPhone && !isSuspicious)
+  const whatsappUrl = hasValidPhone
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+        whatsappMessage || 'Olá, Andréa! Gostaria de saber mais sobre a Orientação Parental.',
+      )}`
+    : '#contato'
 
   const defaultPoints = [
     'Birras e Limites: manejo acolhedor com consistência e sem violência',
@@ -113,9 +117,14 @@ export default function OrientacaoParental({
               <Button
                 asChild
                 size="lg"
-                className="bg-sage-600 hover:bg-sage-700 text-white font-medium px-8 py-6 rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] text-base"
+                className="bg-sage-600 hover:bg-sage-700 text-white font-medium px-8 py-6 rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] text-base focus:ring-2 focus:ring-sage-500"
               >
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={whatsappUrl}
+                  target={whatsappUrl.startsWith('http') ? '_blank' : undefined}
+                  rel={whatsappUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  aria-label="Agendar orientação parental com a psicóloga Andréa Armôa"
+                >
                   {content?.cta_text || 'Quero agendar uma Orientação Parental'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </a>

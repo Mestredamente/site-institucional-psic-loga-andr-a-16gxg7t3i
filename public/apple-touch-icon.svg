@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="apple-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFCF9"/>
+      <stop offset="100%" stop-color="#B5D8CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#apple-bg)"/>
+  <rect x="10" y="10" width="160" height="160" rx="32" fill="none" stroke="#C9A96A" stroke-width="2" stroke-opacity="0.6"/>
+  <circle cx="90" cy="90" r="62" fill="#FFFFFF" stroke="#87BBA2" stroke-width="2"/>
+  <text x="90" y="108" font-family="'Cormorant Garamond', Georgia, serif" font-size="52" font-weight="700" fill="#2E3B36" text-anchor="middle" letter-spacing="-1">AA</text>
+  <circle cx="90" cy="42" r="3" fill="#C9A96A"/>
+  <circle cx="90" cy="138" r="3" fill="#C9A96A"/>
+</svg>

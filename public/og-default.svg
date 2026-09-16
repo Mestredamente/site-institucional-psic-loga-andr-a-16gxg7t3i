@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFCF9"/>
+      <stop offset="50%" stop-color="#F7F3EC"/>
+      <stop offset="100%" stop-color="#EAE3D6"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="50%" stop-color="#C9A96A"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <radialGradient id="subtle" cx="85%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#B5D8CC" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FFFCF9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="subtle2" cx="15%" cy="85%" r="45%">
+      <stop offset="0%" stop-color="#C9A96A" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#FFFCF9" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#3E3A37" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background base -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#subtle)"/>
+  <rect width="1200" height="630" fill="url(#subtle2)"/>
+
+  <!-- Elegant inner border frame -->
+  <rect x="40" y="40" width="1120" height="550" rx="24" fill="none" stroke="#C9A96A" stroke-width="2" stroke-opacity="0.45"/>
+  <rect x="52" y="52" width="1096" height="526" rx="16" fill="none" stroke="#6FA287" stroke-width="1" stroke-opacity="0.25"/>
+
+  <!-- Corner embellishments -->
+  <circle cx="40" cy="40" r="5" fill="#C9A96A"/>
+  <circle cx="1160" cy="40" r="5" fill="#C9A96A"/>
+  <circle cx="40" cy="590" r="5" fill="#C9A96A"/>
+  <circle cx="1160" cy="590" r="5" fill="#C9A96A"/>
+
+  <!-- Left: Monogram Badge & Decorative Emblem -->
+  <g transform="translate(100, 165)" filter="url(#shadow)">
+    <!-- Outer circle -->
+    <circle cx="150" cy="150" r="130" fill="#FFFFFF" stroke="#C9A96A" stroke-width="3" stroke-opacity="0.7"/>
+    <!-- Inner dashed decorative ring -->
+    <circle cx="150" cy="150" r="115" fill="#B5D8CC" fill-opacity="0.2" stroke="#6FA287" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <!-- Center Monogram "AA" -->
+    <text x="150" y="180" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif" font-size="96" font-weight="700" fill="#2E3B36" text-anchor="middle" letter-spacing="-2">AA</text>
+    <!-- Little star/dot -->
+    <circle cx="150" cy="78" r="4" fill="#C9A96A"/>
+    <circle cx="150" cy="222" r="4" fill="#C9A96A"/>
+  </g>
+
+  <!-- Right: Typography & Credentials -->
+  <g transform="translate(430, 130)">
+    <!-- Category pill -->
+    <g transform="translate(0, 0)">
+      <rect width="360" height="38" rx="19" fill="#B5D8CC" fill-opacity="0.45" stroke="#87BBA2" stroke-width="1"/>
+      <circle cx="20" cy="19" r="4" fill="#2E3B36"/>
+      <text x="36" y="24" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#2E3B36" letter-spacing="1.5">ATENDIMENTO CLÍNICO &amp; NEUROPSICOLOGIA</text>
+    </g>
+
+    <!-- Full Professional Name -->
+    <text x="0" y="105" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif" font-size="52" font-weight="700" fill="#2E3B36" letter-spacing="-0.5">
+      Andréa dos Santos Silva Armôa
+    </text>
+
+    <!-- Subtitle / Specialization -->
+    <text x="0" y="160" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="24" font-weight="600" fill="#5F574E" letter-spacing="0.5">
+      Psicóloga Clínica e Neuropsicóloga
+    </text>
+
+    <!-- CRP Badge & Registry -->
+    <g transform="translate(0, 195)">
+      <rect width="180" height="36" rx="10" fill="#FFFFFF" stroke="#C9A96A" stroke-width="1.5"/>
+      <text x="90" y="23" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" fill="#8C6D37" text-anchor="middle" letter-spacing="1">
+        CRP 14/075954
+      </text>
+    </g>
+
+    <!-- Gold Divider Line -->
+    <line x1="0" y1="260" x2="650" y2="260" stroke="url(#gold)" stroke-width="2" stroke-opacity="0.8"/>
+
+    <!-- Services bullet row -->
+    <g transform="translate(0, 295)">
+      <!-- Item 1 -->
+      <circle cx="6" cy="6" r="4" fill="#6FA287"/>
+      <text x="20" y="10" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A443E">Psicoterapia Individual</text>
+
+      <!-- Item 2 -->
+      <circle cx="230" cy="6" r="4" fill="#6FA287"/>
+      <text x="244" y="10" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A443E">Orientação Parental</text>
+
+      <!-- Item 3 -->
+      <circle cx="440" cy="6" r="4" fill="#6FA287"/>
+      <text x="454" y="10" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A443E">Avaliação Neuropsicológica</text>
+    </g>
+
+    <!-- Modalities footer text -->
+    <g transform="translate(0, 345)">
+      <text x="0" y="0" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#7A726A" letter-spacing="0.5">
+        ✦ Atendimento Presencial &amp; Teleatendimento Online Nacional
+      </text>
+    </g>
+  </g>
+</svg>

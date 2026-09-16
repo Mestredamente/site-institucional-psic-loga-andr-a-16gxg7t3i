@@ -16,13 +16,17 @@ export default function Hero({
   content,
   photoUrl,
   isLoadingMedia,
-  whatsappPhone = '5511999998888',
+  whatsappPhone = '',
   whatsappMessage = '',
 }: HeroProps) {
-  const cleanPhone = whatsappPhone.replace(/\D/g, '')
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-    whatsappMessage || 'Olá, Andréa! Gostaria de agendar um atendimento.',
-  )}`
+  const cleanPhone = (whatsappPhone || '').replace(/\D/g, '')
+  const isSuspicious = /^5{0,2}1{0,2}9{4,}/.test(cleanPhone) || cleanPhone.length < 10
+  const hasValidPhone = Boolean(cleanPhone && !isSuspicious)
+  const whatsappUrl = hasValidPhone
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+        whatsappMessage || 'Olá, Andréa! Gostaria de agendar um atendimento.',
+      )}`
+    : '#contato'
 
   // Imagem default profissional caso o admin ainda não tenha feito upload
   // NOTA: SÓ deve ser exibida após a consulta ao backend concluir (não durante o loading)
@@ -113,15 +117,15 @@ export default function Hero({
                   fallbackSrc={defaultPhoto}
                   isLoading={isLoadingMedia}
                   priority={true}
-                  alt={content?.title || 'Dra. Andréa Armôa'}
+                  alt="Andréa dos Santos Silva Armôa, psicóloga clínica e neuropsicóloga no consultório"
                   containerClassName="w-full h-full"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 >
                   {/* Legenda sutil no rodapé da imagem */}
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-warm-900/80 via-warm-900/40 to-transparent p-5 text-white z-10 pointer-events-none">
-                    <p className="font-serif font-bold text-lg">Andréa Armôa</p>
+                    <p className="font-serif font-bold text-lg">Andréa dos Santos Silva Armôa</p>
                     <p className="text-xs text-warm-100 opacity-90">
-                      Psicóloga Clínica & Neuropsicóloga • CRP 14/075954
+                      Psicóloga Clínica e Neuropsicóloga • CRP 14/075954
                     </p>
                   </div>
                 </SmartImage>

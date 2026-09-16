@@ -7,21 +7,47 @@ interface ContatoProps {
 }
 
 export default function Contato({ content }: ContatoProps) {
-  const whatsappPhone = content?.whatsapp || '5511999998888'
-  const cleanPhone = whatsappPhone.replace(/\D/g, '')
-  const whatsappFormatted = content?.whatsapp_formatted || '(11) 99999-8888'
+  const rawWhatsapp = content?.whatsapp || ''
+  const cleanPhone = rawWhatsapp.replace(/\D/g, '')
+  // Validar se telefone é real (mínimo 10 dígitos, sem repetição de noves fictícios)
+  const isSuspiciousPhone =
+    !rawWhatsapp || /^5{0,2}1{0,2}9{4,}/.test(cleanPhone) || cleanPhone.length < 10
+  const hasValidWhatsapp = Boolean(rawWhatsapp && !isSuspiciousPhone)
+  const whatsappFormatted = content?.whatsapp_formatted || (hasValidWhatsapp ? rawWhatsapp : '')
   const whatsappMsg =
     content?.whatsapp_message ||
     'Olá, Andréa! Gostaria de obter mais informações e agendar um horário para atendimento.'
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`
+  const whatsappUrl = hasValidWhatsapp
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`
+    : '#'
 
-  const instagramHandle = content?.instagram || '@andreaarnoapsi'
+  // Instagram sanitizado: conta real da profissional @andreaarmoapsi
+  let instagramHandle = (content?.instagram || '').trim()
+  if (!instagramHandle || instagramHandle.toLowerCase().includes('andreaarno')) {
+    instagramHandle = '@andreaarmoapsi'
+  }
   const instagramUrl =
-    content?.instagram_url || `https://instagram.com/${instagramHandle.replace('@', '')}`
+    content?.instagram_url && !content.instagram_url.toLowerCase().includes('andreaarno')
+      ? content.instagram_url
+      : `https://instagram.com/${instagramHandle.replace('@', '')}`
+
+  // Endereço: ocultar se for endereço não preenchido ou não verificado
+  const rawAddress = (content?.address || '').trim()
+  const isPlaceholderAddress = !rawAddress || /p[a]ulista|prime office/i.test(rawAddress)
+  const hasValidAddress = !isPlaceholderAddress
+  const address = hasValidAddress ? rawAddress : ''
+  const addressComplement = hasValidAddress ? content?.address_complement : ''
+
+  // Email: ocultar se for placeholder não confirmado
+  const rawEmail = (content?.email || '').trim()
+  const hasValidEmail = Boolean(
+    rawEmail && rawEmail.includes('@') && !rawEmail.toLowerCase().includes('andreaarmoa.com.br'),
+  )
 
   const mapsIframe =
-    content?.maps_iframe_url ||
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.1975!2d-46.654!3d-23.564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDMzJzUxLjEiUyA0NsKwMzknMTQuNCJX!5e0!3m2!1spt-BR!2sbr!4v1600000000000'
+    content?.maps_iframe_url && !content.maps_iframe_url.includes('1600000000000')
+      ? content.maps_iframe_url
+      : null
 
   return (
     <section id="contato" className="py-20 lg:py-28 bg-warm-100/60 border-t border-warm-200">
@@ -52,42 +78,58 @@ export default function Contato({ content }: ContatoProps) {
 
               <div className="space-y-4 pt-2">
                 {/* WhatsApp */}
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center shrink-0">
-                    <Phone className="w-5 h-5 text-sage-700" />
+                {hasValidWhatsapp ? (
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5 text-sage-700" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-warm-500 uppercase tracking-wider block">
+                        WhatsApp
+                      </span>
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-base font-medium text-warm-700 hover:text-sage-700 transition-colors"
+                      >
+                        {whatsappFormatted}
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-semibold text-warm-500 uppercase tracking-wider block">
-                      WhatsApp
-                    </span>
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-base font-medium text-warm-700 hover:text-sage-700 transition-colors"
-                    >
-                      {whatsappFormatted}
-                    </a>
+                ) : (
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center shrink-0">
+                      <Clock className="w-5 h-5 text-sage-700" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-warm-500 uppercase tracking-wider block">
+                        Atendimento com Agendamento
+                      </span>
+                      <p className="text-sm font-medium text-warm-700">
+                        Atendimento presencial e teleatendimento online nacional.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Endereço */}
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 text-sage-700" />
+                {/* Endereço - Ocultado dinamicamente caso não haja endereço confirmado */}
+                {hasValidAddress && (
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-sage-700" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-warm-500 uppercase tracking-wider block">
+                        Consultório Presencial
+                      </span>
+                      <p className="text-sm font-medium text-warm-700">{address}</p>
+                      {addressComplement && (
+                        <p className="text-xs text-warm-500">{addressComplement}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-semibold text-warm-500 uppercase tracking-wider block">
-                      Consultório Presencial
-                    </span>
-                    <p className="text-sm font-medium text-warm-700">
-                      {content?.address || 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP'}
-                    </p>
-                    {content?.address_complement && (
-                      <p className="text-xs text-warm-500">{content.address_complement}</p>
-                    )}
-                  </div>
-                </div>
+                )}
 
                 {/* Instagram */}
                 <div className="flex items-start gap-3.5">
@@ -104,13 +146,13 @@ export default function Contato({ content }: ContatoProps) {
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-warm-700 hover:text-sage-700 transition-colors"
                     >
-                      {instagramHandle}
+                      {instagramHandle || '@andreaarmoapsi'}
                     </a>
                   </div>
                 </div>
 
-                {/* Email */}
-                {content?.email && (
+                {/* Email - apenas se confirmado */}
+                {hasValidEmail && (
                   <div className="flex items-start gap-3.5">
                     <div className="w-10 h-10 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center shrink-0">
                       <Mail className="w-5 h-5 text-sage-700" />
@@ -120,10 +162,10 @@ export default function Contato({ content }: ContatoProps) {
                         E-mail
                       </span>
                       <a
-                        href={`mailto:${content.email}`}
+                        href={`mailto:${rawEmail}`}
                         className="text-sm font-medium text-warm-700 hover:text-sage-700 transition-colors"
                       >
-                        {content.email}
+                        {rawEmail}
                       </a>
                     </div>
                   </div>
@@ -134,32 +176,57 @@ export default function Contato({ content }: ContatoProps) {
             <div className="pt-6 border-t border-warm-100 space-y-3">
               <Button
                 asChild
-                className="w-full bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium py-6 rounded-2xl shadow-sm text-base transition-all transform hover:scale-[1.01]"
+                className="w-full bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium py-6 rounded-2xl shadow-sm text-base transition-all transform hover:scale-[1.01] focus:ring-2 focus:ring-sage-500"
               >
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Conversar no WhatsApp com a psicóloga Andréa Armôa"
+                >
                   Conversar no WhatsApp
                 </a>
               </Button>
               <div className="flex items-center justify-center gap-2 text-xs text-warm-500 pt-1">
                 <ShieldCheck className="w-4 h-4 text-sage-600" />
-                <span>Horários com agendamento prévio</span>
+                <span>Horários com agendamento prévio • Sigilo profissional garantido</span>
               </div>
             </div>
           </div>
 
-          {/* Mapa do Google embutido (7 colunas) */}
-          <div className="lg:col-span-7 rounded-3xl overflow-hidden border border-warm-200 shadow-sm bg-white min-h-[350px] relative">
-            <iframe
-              src={mapsIframe}
-              title="Localização do consultório no Google Maps"
-              width="100%"
-              height="100%"
-              style={{ border: 0, minHeight: '400px' }}
-              allowFullScreen={false}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full h-full"
-            />
+          {/* Mapa do Google embutido (7 colunas) ou Painel de Modalidades quando sem endereço */}
+          <div className="lg:col-span-7 rounded-3xl overflow-hidden border border-warm-200 shadow-sm bg-white min-h-[350px] relative flex flex-col justify-center">
+            {mapsIframe ? (
+              <iframe
+                src={mapsIframe}
+                title="Localização do consultório no Google Maps"
+                width="100%"
+                height="100%"
+                style={{ border: 0, minHeight: '400px' }}
+                allowFullScreen={false}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+              />
+            ) : (
+              <div className="p-8 sm:p-12 text-center space-y-4 max-w-lg mx-auto">
+                <div className="w-14 h-14 rounded-2xl bg-sage-100 border border-sage-200 flex items-center justify-center mx-auto text-sage-700">
+                  <MapPin className="w-7 h-7" />
+                </div>
+                <h3 className="font-serif text-2xl font-bold text-warm-800">
+                  Atendimento Presencial &amp; Online
+                </h3>
+                <p className="text-sm text-warm-600 leading-relaxed font-normal">
+                  Sessões individuais de psicoterapia clínica, avaliação neuropsicológica e
+                  orientação parental. O endereço exato do consultório presencial é disponibilizado
+                  no momento da confirmação do agendamento.
+                </p>
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-sage-700 bg-sage-50 px-4 py-2 rounded-full border border-sage-200">
+                  <ShieldCheck className="w-4 h-4" />
+                  Teleatendimento seguro com alcance nacional
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -381,17 +381,16 @@ export async function restoreDefaultContent(): Promise<void> {
     contato: {
       title: 'Contato & Localização',
       subtitle: 'Dê o primeiro passo em direção ao seu bem-estar emocional',
-      address: 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP',
-      address_complement: 'Edifício Prime Office, Sala 804',
-      whatsapp: '5511999998888',
-      whatsapp_formatted: '(11) 99999-8888',
+      address: '',
+      address_complement: '',
+      whatsapp: '',
+      whatsapp_formatted: '',
       whatsapp_message:
         'Olá, Andréa! Gostaria de obter mais informações e agendar um horário para atendimento.',
-      instagram: '@andreaarnoapsi',
-      instagram_url: 'https://instagram.com/andreaarnoapsi',
-      email: 'contato@andreaarmoa.com.br',
-      maps_iframe_url:
-        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.1975!2d-46.654!3d-23.564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDMzJzUxLjEiUyA0NsKwMzknMTQuNCJX!5e0!3m2!1spt-BR!2sbr!4v1600000000000',
+      instagram: '@andreaarmoapsi',
+      instagram_url: 'https://instagram.com/andreaarmoapsi',
+      email: '',
+      maps_iframe_url: '',
     },
     site_config: {
       accent_color: '#B5D8CC',

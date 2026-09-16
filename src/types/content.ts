@@ -102,6 +102,10 @@ export interface SiteConfigContent {
   accent_color: string
   site_title?: string
   site_description?: string
+  canonical_url?: string
+  og_image_key?: string
+  og_image_custom_url?: string
+  area_served?: string
   admin_email?: string
   updated_at?: string
 }

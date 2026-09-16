@@ -209,6 +209,15 @@ export default function Admin() {
     return <AdminLogin />
   }
 
+  // Verificação de pendências e dados placeholder
+  const contatoContent = contentMap['contato'] || {}
+  const rawWhatsapp = contatoContent.whatsapp || ''
+  const hasPendingWhatsapp =
+    !rawWhatsapp || /^5{0,2}1{0,2}9{4,}/.test(rawWhatsapp) || rawWhatsapp.length < 10
+  const hasPendingAddress = !contatoContent.address || /p[a]ulista/i.test(contatoContent.address)
+  const hasPendingEmail = !contatoContent.email || !contatoContent.email.includes('@')
+  const hasAnyPending = hasPendingWhatsapp || hasPendingAddress || hasPendingEmail
+
   return (
     <div className="min-h-screen bg-warm-100/60 flex flex-col justify-between">
       <div>
@@ -303,7 +312,53 @@ export default function Admin() {
         </header>
 
         {/* Conteúdo Principal com Abas do CMS */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
+          {/* Banner de Verificação de Placeholder / Dados Fictícios */}
+          {hasAnyPending && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 text-amber-800">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-amber-900">
+                    Aviso Ético &amp; Verificação de Dados do Site
+                  </p>
+                  <p className="text-xs text-amber-800 leading-relaxed">
+                    Para conformidade com o Código de Ética e proteger sua credibilidade
+                    profissional, dados de exemplo foram ocultados do site público até que você
+                    informe os reais:
+                  </p>
+                  <ul className="text-[11px] text-amber-700 list-disc list-inside space-y-0.5 pt-1">
+                    {hasPendingWhatsapp && (
+                      <li>
+                        WhatsApp: número real não informado (botões direcionam com segurança para o
+                        rodapé).
+                      </li>
+                    )}
+                    {hasPendingAddress && (
+                      <li>
+                        Endereço presencial: mantido oculto (o site exibe atendimento presencial com
+                        agendamento prévio e online nacional).
+                      </li>
+                    )}
+                    {hasPendingEmail && (
+                      <li>E-mail: campo mantido oculto até confirmação de e-mail ativo.</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setActiveTab('texts')}
+                className="bg-white border-amber-300 text-amber-900 hover:bg-amber-100 rounded-xl text-xs shrink-0 font-semibold"
+              >
+                Preencher na Aba Conteúdo
+              </Button>
+            </div>
+          )}
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             {/* Barra de Abas Elegante */}
             <div className="bg-white p-1.5 rounded-2xl border border-warm-200 shadow-xs overflow-x-auto">

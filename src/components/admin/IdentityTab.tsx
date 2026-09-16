@@ -39,13 +39,16 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
   const currentConfig = contentMap['site_config'] || {}
   const [accentColor, setAccentColor] = useState(currentConfig.accent_color || '#B5D8CC')
   const [siteTitle, setSiteTitle] = useState(
-    currentConfig.site_title ||
-      'Andréa dos Santos Silva Armôa | Psicóloga Clínica & Neuropsicóloga',
+    currentConfig.site_title || 'Andréa Armôa | Psicóloga Clínica e Neuropsicóloga',
   )
   const [siteDesc, setSiteDesc] = useState(
     currentConfig.site_description ||
-      'Psicóloga Clínica e Neuropsicóloga - CRP 14/075954. Atendimento presencial e online.',
+      'Psicóloga clínica e neuropsicóloga (CRP 14/075954). Atendimento humanizado presencial e online em psicoterapia e orientação parental.',
   )
+  const [canonicalUrl, setCanonicalUrl] = useState(
+    currentConfig.canonical_url || 'https://andreaarmoa.com.br',
+  )
+  const [ogImageKey, setOgImageKey] = useState(currentConfig.og_image_key || 'hero_foto')
 
   const [isSavingColor, setIsSavingColor] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
@@ -62,6 +65,12 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
     if (currentConfig.site_description) {
       setSiteDesc(currentConfig.site_description)
     }
+    if (currentConfig.canonical_url) {
+      setCanonicalUrl(currentConfig.canonical_url)
+    }
+    if (currentConfig.og_image_key) {
+      setOgImageKey(currentConfig.og_image_key)
+    }
   }, [currentConfig])
 
   // Salvar Cor de Destaque e Metadados
@@ -73,6 +82,8 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
         accent_color: accentColor,
         site_title: siteTitle,
         site_description: siteDesc,
+        canonical_url: canonicalUrl,
+        og_image_key: ogImageKey,
         updated_at: new Date().toISOString(),
       }
       await updateSiteContent('site_config', updated)
@@ -175,6 +186,10 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
   const logoUrl = mediaMap['logo']
   const faviconUrl = mediaMap['favicon']
 
+  // Resolução da Imagem OG ativa
+  const resolvedOgImageUrl =
+    ogImageKey === 'default' ? '/og-default.svg' : mediaMap[ogImageKey] || '/og-default.svg'
+
   return (
     <div className="space-y-8">
       <div>
@@ -266,31 +281,158 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
 
               {/* Títulos do Site e SEO */}
               <div className="space-y-4 pt-4 border-t border-warm-200">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-warm-500">
-                  Metadados do Site & Aba do Navegador
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-warm-500">
+                    SEO Técnico & Metatags Sociais
+                  </h4>
+                  <span className="text-[11px] text-warm-400">
+                    Otimizado para Google, WhatsApp e Redes
+                  </span>
+                </div>
+
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-warm-700">
-                    Título da Página (SEO / Aba)
-                  </Label>
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs font-semibold text-warm-700">
+                      Título da Página (Meta Title — máx 60 caracteres)
+                    </Label>
+                    <span
+                      className={`text-[11px] font-mono ${siteTitle.length > 60 ? 'text-red-500 font-bold' : 'text-warm-400'}`}
+                    >
+                      {siteTitle.length}/60
+                    </span>
+                  </div>
                   <Input
                     value={siteTitle}
+                    maxLength={70}
                     onChange={(e) => setSiteTitle(e.target.value)}
-                    placeholder="Título exibido na aba"
+                    placeholder="Andréa Armôa | Psicóloga Clínica e Neuropsicóloga"
                   />
                 </div>
+
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-warm-700">
-                    Descrição do Site (Meta Description)
-                  </Label>
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs font-semibold text-warm-700">
+                      Descrição do Site (Meta Description — máx 155 caracteres)
+                    </Label>
+                    <span
+                      className={`text-[11px] font-mono ${siteDesc.length > 155 ? 'text-red-500 font-bold' : 'text-warm-400'}`}
+                    >
+                      {siteDesc.length}/155
+                    </span>
+                  </div>
                   <Input
                     value={siteDesc}
+                    maxLength={170}
                     onChange={(e) => setSiteDesc(e.target.value)}
-                    placeholder="Descrição para buscadores"
+                    placeholder="Psicóloga clínica e neuropsicóloga (CRP 14/075954). Atendimento presencial e online."
                   />
                 </div>
-              </div>
 
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-warm-700">
+                    URL Canônica Absoluta (HTTPS)
+                  </Label>
+                  <Input
+                    value={canonicalUrl}
+                    onChange={(e) => setCanonicalUrl(e.target.value)}
+                    placeholder="https://andreaarmoa.com.br"
+                  />
+                </div>
+
+                {/* Seleção da Imagem de Compartilhamento Social (og:image) */}
+                <div className="space-y-2 pt-2">
+                  <Label className="text-xs font-semibold text-warm-700">
+                    Escolha qual foto do site vira a Imagem de Compartilhamento (og:image):
+                  </Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setOgImageKey('hero_foto')}
+                      className={`p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between ${
+                        ogImageKey === 'hero_foto'
+                          ? 'border-warm-700 bg-white ring-2 ring-warm-700/20 font-bold'
+                          : 'border-warm-200 bg-white/70 hover:bg-white'
+                      }`}
+                    >
+                      <div>
+                        <p className="font-semibold text-warm-800">Foto Principal do Hero</p>
+                        <p className="text-[11px] text-warm-500">
+                          Foto profissional de apresentação
+                        </p>
+                      </div>
+                      {mediaMap['hero_foto'] && (
+                        <img
+                          src={mediaMap['hero_foto']}
+                          alt="Hero"
+                          className="w-9 h-9 rounded-lg object-cover border"
+                        />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOgImageKey('sobre_foto')}
+                      className={`p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between ${
+                        ogImageKey === 'sobre_foto'
+                          ? 'border-warm-700 bg-white ring-2 ring-warm-700/20 font-bold'
+                          : 'border-warm-200 bg-white/70 hover:bg-white'
+                      }`}
+                    >
+                      <div>
+                        <p className="font-semibold text-warm-800">Foto da Seção Sobre</p>
+                        <p className="text-[11px] text-warm-500">Consultório / Atendimento</p>
+                      </div>
+                      {mediaMap['sobre_foto'] && (
+                        <img
+                          src={mediaMap['sobre_foto']}
+                          alt="Sobre"
+                          className="w-9 h-9 rounded-lg object-cover border"
+                        />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOgImageKey('orientacao_foto')}
+                      className={`p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between ${
+                        ogImageKey === 'orientacao_foto'
+                          ? 'border-warm-700 bg-white ring-2 ring-warm-700/20 font-bold'
+                          : 'border-warm-200 bg-white/70 hover:bg-white'
+                      }`}
+                    >
+                      <div>
+                        <p className="font-semibold text-warm-800">Foto Orientação Parental</p>
+                        <p className="text-[11px] text-warm-500">Família / Crianças</p>
+                      </div>
+                      {mediaMap['orientacao_foto'] && (
+                        <img
+                          src={mediaMap['orientacao_foto']}
+                          alt="Orientação"
+                          className="w-9 h-9 rounded-lg object-cover border"
+                        />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOgImageKey('default')}
+                      className={`p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between ${
+                        ogImageKey === 'default'
+                          ? 'border-warm-700 bg-white ring-2 ring-warm-700/20 font-bold'
+                          : 'border-warm-200 bg-white/70 hover:bg-white'
+                      }`}
+                    >
+                      <div>
+                        <p className="font-semibold text-warm-800">Composição Oficial (1200x630)</p>
+                        <p className="text-[11px] text-warm-500">Monograma + CRP + Fundo neutro</p>
+                      </div>
+                      <div className="w-9 h-9 rounded-lg bg-warm-200 border flex items-center justify-center font-serif font-bold text-xs">
+                        AA
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div className="pt-2 flex items-center justify-between">
                 <Button
                   type="button"
@@ -372,29 +514,38 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-warm-50 border border-warm-200 space-y-1.5">
-                <span className="text-[11px] uppercase tracking-wider text-warm-500 font-semibold block">
-                  Simulação do Cabeçalho Público:
-                </span>
-                <div className="flex items-center justify-between pt-1">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="Logo" className="h-8 max-w-[120px] object-contain" />
-                  ) : (
-                    <div className="flex flex-col">
-                      <span className="font-serif text-sm font-bold text-warm-700">
-                        Andréa Armôa
-                      </span>
-                      <span className="text-[9px] uppercase tracking-wider text-warm-400">
-                        CRP 14/075954
-                      </span>
-                    </div>
-                  )}
-                  <span
-                    className="text-xs px-3 py-1 rounded-full text-warm-800 font-medium"
-                    style={{ backgroundColor: accentColor }}
-                  >
-                    Contato
+              {/* Pré-visualização do Card de Compartilhamento Social (WhatsApp / Facebook / Twitter) */}
+              <div className="p-4 rounded-2xl bg-warm-50 border border-warm-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] uppercase tracking-wider text-warm-600 font-bold flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-sage-600" />
+                    Preview do Card Social (WhatsApp / X / FB):
                   </span>
+                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-medium">
+                    1200 × 630 px
+                  </span>
+                </div>
+
+                <div className="rounded-xl overflow-hidden border border-warm-300 bg-white shadow-sm">
+                  <div className="aspect-[1.91/1] w-full bg-warm-200 relative overflow-hidden">
+                    <img
+                      src={resolvedOgImageUrl}
+                      alt="Preview Open Graph"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-3 space-y-1 border-t border-warm-100 bg-[#f9f8f6]">
+                    <p className="text-[10px] uppercase tracking-wider text-warm-400 font-mono">
+                      andreaarmoa.com.br
+                    </p>
+                    <p className="text-xs font-bold text-warm-800 line-clamp-1">
+                      {siteTitle || 'Andréa Armôa | Psicóloga Clínica e Neuropsicóloga'}
+                    </p>
+                    <p className="text-[11px] text-warm-500 line-clamp-2 leading-relaxed">
+                      {siteDesc ||
+                        'Psicóloga clínica e neuropsicóloga (CRP 14/075954). Atendimento presencial e online.'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>

@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({
-  whatsappPhone = '5511999998888',
+  whatsappPhone = '',
   whatsappMessage = '',
   logoUrl,
   isLoadingMedia = false,
@@ -42,10 +42,14 @@ export default function Header({
     { label: 'Contato', href: '#contato' },
   ]
 
-  const cleanPhone = whatsappPhone.replace(/\D/g, '')
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-    whatsappMessage || 'Olá, Andréa! Gostaria de agendar um atendimento.',
-  )}`
+  const cleanPhone = (whatsappPhone || '').replace(/\D/g, '')
+  const isSuspicious = /^5{0,2}1{0,2}9{4,}/.test(cleanPhone) || cleanPhone.length < 10
+  const hasValidPhone = Boolean(cleanPhone && !isSuspicious)
+  const whatsappUrl = hasValidPhone
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+        whatsappMessage || 'Olá, Andréa! Gostaria de agendar um atendimento.',
+      )}`
+    : '#contato'
 
   return (
     <header
@@ -104,9 +108,14 @@ export default function Header({
           ))}
           <Button
             asChild
-            className="bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium px-5 py-2 rounded-full shadow-sm hover:shadow transition-all transform hover:scale-[1.02]"
+            className="bg-sage-300 hover:bg-sage-400 text-sage-800 font-medium px-5 py-2 rounded-full shadow-sm hover:shadow transition-all transform hover:scale-[1.02] focus:ring-2 focus:ring-sage-500"
           >
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={whatsappUrl}
+              target={whatsappUrl.startsWith('http') ? '_blank' : undefined}
+              rel={whatsappUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+              aria-label="Agendar atendimento com a psicóloga Andréa Armôa"
+            >
               Agendar Atendimento
               <ArrowRight className="w-4 h-4 ml-1.5" />
             </a>
@@ -118,22 +127,25 @@ export default function Header({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Abrir menu"
-            className="text-warm-700 hover:bg-warm-100"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation-drawer"
+            className="text-warm-700 hover:bg-warm-100 focus:ring-2 focus:ring-sage-500"
           >
-            <Menu className="w-6 h-6" />
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
         </div>
       </div>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div id="mobile-navigation-drawer" className="fixed inset-0 z-50 lg:hidden">
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-warm-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
           />
 
           {/* Sliding panel */}
@@ -145,19 +157,19 @@ export default function Header({
                   variant="ghost"
                   size="icon"
                   onClick={() => setMobileMenuOpen(false)}
-                  aria-label="Fechar menu"
+                  aria-label="Fechar menu de navegação"
                 >
                   <X className="w-5 h-5 text-warm-700" />
                 </Button>
               </div>
 
-              <nav className="mt-6 flex flex-col gap-3">
+              <nav className="mt-6 flex flex-col gap-3" aria-label="Navegação móvel">
                 {navLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 text-base font-medium text-warm-700 hover:bg-warm-100 rounded-lg transition-colors"
+                    className="px-3 py-2 text-base font-medium text-warm-700 hover:bg-warm-100 rounded-lg transition-colors focus:ring-2 focus:ring-sage-500"
                   >
                     {link.label}
                   </a>
@@ -172,15 +184,16 @@ export default function Header({
               >
                 <a
                   href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target={whatsappUrl.startsWith('http') ? '_blank' : undefined}
+                  rel={whatsappUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
                   onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Agendar atendimento com Andréa Armôa"
                 >
                   Agendar Atendimento
                 </a>
               </Button>
               <p className="mt-3 text-center text-xs text-warm-500">
-                CRP 14/075954 • Atendimento Presencial & Online
+                CRP 14/075954 • Atendimento Presencial &amp; Online
               </p>
             </div>
           </div>

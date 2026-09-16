@@ -288,17 +288,16 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
     contentMap['contato'] || {
       title: 'Contato & Localização',
       subtitle: 'Dê o primeiro passo em direção ao seu bem-estar emocional',
-      address: 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP',
-      address_complement: 'Edifício Prime Office, Sala 804',
-      whatsapp: '5511999998888',
-      whatsapp_formatted: '(11) 99999-8888',
+      address: '',
+      address_complement: '',
+      whatsapp: '',
+      whatsapp_formatted: '',
       whatsapp_message:
         'Olá, Andréa! Gostaria de obter mais informações e agendar um horário para atendimento.',
-      instagram: '@andreaarnoapsi',
-      instagram_url: 'https://instagram.com/andreaarnoapsi',
-      email: 'contato@andreaarmoa.com.br',
-      maps_iframe_url:
-        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.1975!2d-46.654!3d-23.564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDMzJzUxLjEiUyA0NsKwMzknMTQuNCJX!5e0!3m2!1spt-BR!2sbr!4v1600000000000',
+      instagram: '@andreaarmoapsi',
+      instagram_url: 'https://instagram.com/andreaarmoapsi',
+      email: '',
+      maps_iframe_url: '',
     },
   )
 
@@ -312,8 +311,6 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
       if (!data.title?.trim()) return 'O Título da seção é obrigatório.'
     } else if (key === 'orientacao_parental') {
       if (!data.quote?.trim()) return 'A frase de destaque (quote) é obrigatória.'
-    } else if (key === 'contato') {
-      if (!data.whatsapp?.trim()) return 'O número de WhatsApp é obrigatório.'
     }
     return null
   }
@@ -1317,7 +1314,7 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                   <Label>Número WhatsApp (DDI + DDD + Num)</Label>
                   <Input
                     value={contato.whatsapp || ''}
-                    placeholder="5511999998888"
+                    placeholder="Ex: 5567981001234"
                     onChange={(e) => setContato({ ...contato, whatsapp: e.target.value })}
                   />
                 </div>
@@ -1325,7 +1322,7 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                   <Label>WhatsApp Formatado</Label>
                   <Input
                     value={contato.whatsapp_formatted || ''}
-                    placeholder="(11) 99999-8888"
+                    placeholder="Ex: (67) 98100-1234"
                     onChange={(e) => setContato({ ...contato, whatsapp_formatted: e.target.value })}
                   />
                 </div>
@@ -1333,7 +1330,7 @@ export default function EditTextsTab({ contentMap, onRefresh }: EditTextsTabProp
                   <Label>Instagram (@)</Label>
                   <Input
                     value={contato.instagram || ''}
-                    placeholder="@andreaarnoapsi"
+                    placeholder="@andreaarmoapsi"
                     onChange={(e) => setContato({ ...contato, instagram: e.target.value })}
                   />
                 </div>

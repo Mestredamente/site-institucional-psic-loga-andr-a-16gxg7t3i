@@ -1,0 +1,29 @@
+{
+  "name": "Andréa dos Santos Silva Armôa | Psicóloga Clínica e Neuropsicóloga",
+  "short_name": "Andréa Armôa",
+  "description": "Atendimento clínico e neuropsicológico presencial e online. CRP 14/075954.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFCF9",
+  "theme_color": "#B5D8CC",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/og-default.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

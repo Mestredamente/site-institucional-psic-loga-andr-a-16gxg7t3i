@@ -68,6 +68,75 @@ export default function Index() {
     }
   }, [contentMap, mediaMap])
 
+  // Aplicar SEO, Metatags, Canonical, Open Graph e Schema.org JSON-LD
+  useEffect(() => {
+    const siteConfig = contentMap['site_config'] || {}
+    const hero = contentMap['hero'] || {}
+    const contato = contentMap['contato'] || {}
+
+    // 1. OG Image Selection
+    let ogImageUrl = '/og-default.svg'
+    const chosenKey = siteConfig.og_image_key || 'hero_foto'
+    if (siteConfig.og_image_custom_url) {
+      ogImageUrl = siteConfig.og_image_custom_url
+    } else if (mediaMap && mediaMap[chosenKey]) {
+      ogImageUrl = mediaMap[chosenKey]
+    } else if (mediaMap && mediaMap['hero_foto']) {
+      ogImageUrl = mediaMap['hero_foto']
+    }
+
+    const pageTitle = siteConfig.site_title || 'Andréa Armôa | Psicóloga Clínica e Neuropsicóloga'
+    const pageDesc =
+      siteConfig.site_description ||
+      'Psicóloga clínica e neuropsicóloga (CRP 14/075954). Atendimento presencial e online em psicoterapia e orientação parental.'
+
+    import('@/lib/seo').then(({ updateMetaTags, updateJsonLd }) => {
+      updateMetaTags({
+        title: pageTitle.length > 60 ? pageTitle.slice(0, 60) : pageTitle,
+        description: pageDesc.length > 155 ? pageDesc.slice(0, 155) : pageDesc,
+        canonicalUrl: siteConfig.canonical_url || 'https://andreaarmoa.com.br/',
+        ogImageUrl,
+        ogType: 'website',
+        siteName: 'Andréa Armôa | Psicologia Clínica & Neuropsicologia',
+        locale: 'pt_BR',
+      })
+
+      // Injetar JSON-LD Psychologist apenas com dados confirmados
+      const cleanPhone = (contato.whatsapp || '').replace(/\D/g, '')
+      const telephone = cleanPhone ? `+${cleanPhone}` : undefined
+      const email = contato.email && contato.email.includes('@') ? contato.email : undefined
+      const instagramUrl =
+        contato.instagram_url ||
+        (contato.instagram
+          ? `https://instagram.com/${contato.instagram.replace('@', '')}`
+          : undefined)
+
+      updateJsonLd({
+        name: 'Andréa dos Santos Silva Armôa',
+        legalName: 'Andréa dos Santos Silva Armôa',
+        crp: hero.crp || 'CRP 14/075954',
+        jobTitle: 'Psicóloga Clínica e Neuropsicóloga',
+        description: pageDesc,
+        url: siteConfig.canonical_url || 'https://andreaarmoa.com.br/',
+        imageUrl: ogImageUrl,
+        telephone,
+        email,
+        instagramUrl,
+        address: contato.address
+          ? {
+              streetAddress: contato.address,
+            }
+          : undefined,
+        areaServed: siteConfig.area_served || 'Atendimento online nacional e presencial',
+        availableServices: [
+          'Psicoterapia Clínica Individual (Adultos, Adolescentes e Crianças)',
+          'Orientação Parental',
+          'Avaliação Neuropsicológica',
+        ],
+      })
+    })
+  }, [contentMap, mediaMap])
+
   // Subscrições realtime para atualizar a landing page imediatamente após edições no admin
   useRealtime('site_content', () => {
     fetchSiteContent().then((data) => setContentMap(data))
@@ -100,7 +169,7 @@ export default function Index() {
   const orientacaoPhoto = mediaMap ? mediaMap['orientacao_foto'] || null : undefined
   const logoUrl = mediaMap ? mediaMap['logo'] || null : undefined
 
-  const whatsappPhone = contatoContent?.whatsapp || '5511999998888'
+  const whatsappPhone = contatoContent?.whatsapp || ''
   const whatsappMessage = contatoContent?.whatsapp_message
 
   return (
