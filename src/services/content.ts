@@ -459,7 +459,7 @@ export async function restoreDefaultContent(): Promise<void> {
       site_title: 'Andréa dos Santos Silva Armôa | Psicóloga Clínica & Neuropsicóloga',
       site_description:
         'Psicóloga Clínica e Neuropsicóloga - CRP 14/075954. Atendimento presencial e online em psicoterapia e orientação parental.',
-      admin_email: 'mestredamente1@gmail.com',
+      admin_email: 'neuropsicologa.andreaarmoa@gmail.com',
       updated_at: new Date().toISOString(),
     },
   }

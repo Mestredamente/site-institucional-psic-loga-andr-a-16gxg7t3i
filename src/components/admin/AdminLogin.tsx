@@ -9,8 +9,8 @@ import { Link } from 'react-router-dom'
 
 export default function AdminLogin() {
   const { login } = useAuth()
-  const [email, setEmail] = useState('mestredamente1@gmail.com')
-  const [password, setPassword] = useState('Skip@Pass')
+  const [email, setEmail] = useState('neuropsicologa.andreaarmoa@gmail.com')
+  const [password, setPassword] = useState('Andrea%0311')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 

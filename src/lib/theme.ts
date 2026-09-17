@@ -38,6 +38,11 @@ export function applyAccentColor(hexColor: string | undefined) {
   const white = { r: 255, g: 255, b: 255 }
   const dark = { r: 29, g: 39, b: 35 }
 
+  // Calcular luminância relativa (WCAG 2.1) para garantir contraste perfeito
+  const luma = 0.2126 * (rgb.r / 255) + 0.7152 * (rgb.g / 255) + 0.0722 * (rgb.b / 255)
+  // Texto sobre o acento principal: se cor for clara (como sálvia ou rosa claro), texto escuro; se for escura, texto claro
+  const primaryFg = luma > 0.45 ? '#1C1A18' : '#FFFFFF'
+
   const root = document.documentElement
 
   // Definir escala para --sage-*
@@ -49,8 +54,12 @@ export function applyAccentColor(hexColor: string | undefined) {
   root.style.setProperty('--sage-500', mix(rgb, dark, 0.28))
   root.style.setProperty('--sage-600', mix(rgb, dark, 0.42))
   root.style.setProperty('--sage-700', mix(rgb, dark, 0.58))
-  root.style.setProperty('--sage-800', mix(rgb, dark, 0.72))
+  root.style.setProperty('--sage-800', primaryFg === '#FFFFFF' ? '#FFFFFF' : mix(rgb, dark, 0.78))
   root.style.setProperty('--sage-900', mix(rgb, dark, 0.86))
+
+  // Atualizar variáveis de estilo CSS e componentes do Shadcn
+  root.style.setProperty('--primary-dynamic', hexColor)
+  root.style.setProperty('--primary-dynamic-foreground', primaryFg)
 }
 
 export function applyFavicon(faviconUrl: string | undefined) {

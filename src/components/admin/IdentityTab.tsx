@@ -25,19 +25,34 @@ interface IdentityTabProps {
 }
 
 const PRESET_COLORS = [
-  { name: 'Verde Sálvia Original', hex: '#B5D8CC' },
-  { name: 'Sálvia Herbal', hex: '#A3CBBE' },
-  { name: 'Verde Eucalipto', hex: '#87BBA2' },
-  { name: 'Verde Floresta Suave', hex: '#6FA287' },
-  { name: 'Argila Rosada', hex: '#D4A373' },
-  { name: 'Terracota Acolhedor', hex: '#C2847A' },
-  { name: 'Azul Serenidade', hex: '#9BB8CD' },
-  { name: 'Lavanda Suave', hex: '#B8AFD0' },
+  { name: 'Malva da Marca (Logo)', hex: '#BC849D', description: 'Cor oficial da cliente' },
+  { name: 'Verde Sálvia Original', hex: '#B5D8CC', description: 'Sálvia institucional' },
+  { name: 'Sálvia Herbal', hex: '#A3CBBE', description: 'Tom botânico suave' },
+  { name: 'Verde Eucalipto', hex: '#87BBA2', description: 'Serenidade e frescor' },
+  { name: 'Verde Floresta Suave', hex: '#6FA287', description: 'Tom natural acolhedor' },
+  { name: 'Argila Rosada', hex: '#D4A373', description: 'Aconchego terroso' },
+  { name: 'Terracota Acolhedor', hex: '#C2847A', description: 'Calor e humanização' },
+  { name: 'Azul Serenidade', hex: '#9BB8CD', description: 'Tranquilidade e foco' },
+  { name: 'Lavanda Suave', hex: '#B8AFD0', description: 'Paz e reflexão' },
 ]
+
+function isValidHexColor(hex: string): boolean {
+  return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex.trim())
+}
+
+function normalizeHexColor(input: string): string {
+  const trimmed = input.trim()
+  if (!trimmed) return '#B5D8CC'
+  const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`
+  return withHash.toUpperCase()
+}
 
 export default function IdentityTab({ contentMap, mediaMap, onRefresh }: IdentityTabProps) {
   const currentConfig = contentMap['site_config'] || {}
   const [accentColor, setAccentColor] = useState(currentConfig.accent_color || '#B5D8CC')
+  const [hexInputText, setHexInputText] = useState(currentConfig.accent_color || '#B5D8CC')
+  const [hexError, setHexError] = useState<string | null>(null)
+
   const [siteTitle, setSiteTitle] = useState(
     currentConfig.site_title || 'Andréa Armôa | Psicóloga Clínica e Neuropsicóloga',
   )
@@ -58,6 +73,8 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
   useEffect(() => {
     if (currentConfig.accent_color) {
       setAccentColor(currentConfig.accent_color)
+      setHexInputText(currentConfig.accent_color)
+      setHexError(null)
     }
     if (currentConfig.site_title) {
       setSiteTitle(currentConfig.site_title)
@@ -73,13 +90,43 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
     }
   }, [currentConfig])
 
+  // Atualizar cor tanto pelo picker nativo quanto pelo input manual
+  const handleColorChange = (newHex: string) => {
+    setHexInputText(newHex)
+    const formatted = normalizeHexColor(newHex)
+    if (isValidHexColor(formatted)) {
+      setHexError(null)
+      setAccentColor(formatted)
+      applyAccentColor(formatted)
+    } else {
+      setHexError('Formato hexadecimal inválido (ex: #BC849D ou #B5D8CC)')
+    }
+  }
+
+  // Ao selecionar das paletas
+  const handleSelectPreset = (presetHex: string) => {
+    setAccentColor(presetHex)
+    setHexInputText(presetHex)
+    setHexError(null)
+    applyAccentColor(presetHex)
+  }
+
   // Salvar Cor de Destaque e Metadados
   const handleSaveConfig = async () => {
+    // Validar cor antes de salvar, com fallback seguro caso o texto digitado seja inválido
+    let safeColor = accentColor
+    const normalizedInput = normalizeHexColor(hexInputText)
+    if (isValidHexColor(normalizedInput)) {
+      safeColor = normalizedInput
+    } else if (!isValidHexColor(safeColor)) {
+      safeColor = '#BC849D' // Fallback para a cor solicitada pela cliente se tudo falhar
+    }
+
     setIsSavingColor(true)
     try {
       const updated = {
         ...currentConfig,
-        accent_color: accentColor,
+        accent_color: safeColor,
         site_title: siteTitle,
         site_description: siteDesc,
         canonical_url: canonicalUrl,
@@ -87,10 +134,13 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
         updated_at: new Date().toISOString(),
       }
       await updateSiteContent('site_config', updated)
-      applyAccentColor(accentColor)
+      setAccentColor(safeColor)
+      setHexInputText(safeColor)
+      setHexError(null)
+      applyAccentColor(safeColor)
       toast({
         title: 'Identidade atualizada!',
-        description: 'A nova cor de destaque e títulos foram aplicados globalmente no site.',
+        description: `A nova cor de destaque (${safeColor}) e títulos foram aplicados globalmente no site.`,
       })
       onRefresh()
     } catch (err: any) {
@@ -219,60 +269,116 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Seletor Customizado e Hex */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-warm-50 border border-warm-200">
-                <input
-                  type="color"
-                  value={accentColor}
-                  onChange={(e) => {
-                    setAccentColor(e.target.value)
-                    applyAccentColor(e.target.value)
-                  }}
-                  className="w-14 h-14 rounded-xl cursor-pointer border-0 bg-transparent p-0"
-                />
-                <div className="flex-1 space-y-1">
-                  <Label className="text-xs font-semibold text-warm-700">Código Hexadecimal</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={accentColor}
-                      onChange={(e) => {
-                        setAccentColor(e.target.value)
-                        applyAccentColor(e.target.value)
-                      }}
-                      className="font-mono uppercase text-sm border-warm-300 max-w-[140px]"
+              {/* Seletor Customizado e Hex Livre */}
+              <div className="p-4 rounded-2xl bg-warm-50 border border-warm-200 space-y-3">
+                <div className="flex items-center gap-4">
+                  <div className="relative group">
+                    <input
+                      type="color"
+                      aria-label="Seletor de cor visual"
+                      value={isValidHexColor(accentColor) ? accentColor : '#BC849D'}
+                      onChange={(e) => handleColorChange(e.target.value)}
+                      className="w-16 h-16 rounded-xl cursor-pointer border-2 border-white shadow-md bg-transparent p-0 transition-transform group-hover:scale-105"
                     />
-                    <span className="text-xs text-warm-400">(Altera em tempo real para teste)</span>
+                    <span className="text-[10px] text-warm-500 block text-center mt-1">Paleta</span>
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <Label
+                      htmlFor="custom-hex-input"
+                      className="text-xs font-semibold text-warm-700 flex items-center justify-between"
+                    >
+                      <span>Código Hexadecimal Livre (ex: #BC849D)</span>
+                      <span className="text-[11px] font-normal text-warm-500">
+                        {isValidHexColor(accentColor)
+                          ? 'Cor válida e ativa'
+                          : 'Aguardando código válido'}
+                      </span>
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 max-w-[180px]">
+                        <Input
+                          id="custom-hex-input"
+                          value={hexInputText}
+                          placeholder="#BC849D"
+                          maxLength={7}
+                          onChange={(e) => handleColorChange(e.target.value)}
+                          className={`font-mono uppercase text-sm border-warm-300 ${
+                            hexError ? 'border-red-400 focus-visible:ring-red-400' : ''
+                          }`}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSelectPreset('#BC849D')}
+                        className={`text-xs border-warm-300 transition-colors ${
+                          accentColor.toUpperCase() === '#BC849D'
+                            ? 'bg-[#BC849D] text-white hover:bg-[#BC849D]/90 border-transparent font-semibold shadow-xs'
+                            : 'hover:bg-warm-100'
+                        }`}
+                      >
+                        <span
+                          className="w-3 h-3 rounded-full mr-1.5 border border-black/10 shrink-0"
+                          style={{ backgroundColor: '#BC849D' }}
+                        />
+                        Aplicar Malva da Logo (#BC849D)
+                      </Button>
+                    </div>
+                    {hexError ? (
+                      <p className="text-[11px] text-red-600 font-medium">{hexError}</p>
+                    ) : (
+                      <p className="text-[11px] text-warm-400">
+                        Altera em tempo real em todos os elementos da página para visualização antes
+                        de salvar.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Paletas recomendadas */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-warm-700">
-                  Paletas Harmoniosas Recomendadas para Psicologia
-                </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-warm-700">
+                    Paletas Harmoniosas Recomendadas para Psicologia & Identidade
+                  </Label>
+                  <span className="text-[11px] text-warm-400">Clique para selecionar</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
                   {PRESET_COLORS.map((preset) => {
                     const isSelected = accentColor.toLowerCase() === preset.hex.toLowerCase()
+                    const isClientSpecial = preset.hex.toUpperCase() === '#BC849D'
                     return (
                       <button
                         key={preset.hex}
                         type="button"
-                        onClick={() => {
-                          setAccentColor(preset.hex)
-                          applyAccentColor(preset.hex)
-                        }}
-                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs transition-all ${
+                        onClick={() => handleSelectPreset(preset.hex)}
+                        className={`flex items-center gap-2.5 p-3 rounded-xl border text-left text-xs transition-all relative ${
                           isSelected
-                            ? 'border-warm-700 bg-white ring-2 ring-warm-700/20 font-bold shadow-xs'
+                            ? 'border-warm-700 bg-white ring-2 ring-warm-700/25 font-bold shadow-xs'
                             : 'border-warm-200 bg-white/70 hover:bg-white hover:border-warm-300'
-                        }`}
+                        } ${isClientSpecial && !isSelected ? 'border-[#BC849D]/50 bg-[#BC849D]/5' : ''}`}
                       >
                         <span
-                          className="w-5 h-5 rounded-lg border border-black/10 shrink-0"
+                          className="w-6 h-6 rounded-lg border border-black/10 shrink-0 shadow-2xs"
                           style={{ backgroundColor: preset.hex }}
                         />
-                        <span className="truncate text-warm-700">{preset.name}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate text-warm-800 font-medium">
+                              {preset.name}
+                            </span>
+                            {isClientSpecial && (
+                              <span className="text-[9px] bg-[#BC849D]/20 text-[#8b4f6b] px-1.5 py-0.2 rounded-full font-bold uppercase">
+                                Logo
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-warm-400 font-mono block">
+                            {preset.hex}
+                          </span>
+                        </div>
                       </button>
                     )
                   })}
@@ -434,20 +540,28 @@ export default function IdentityTab({ contentMap, mediaMap, onRefresh }: Identit
                 </div>
               </div>
               <div className="pt-2 flex items-center justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setAccentColor('#B5D8CC')
-                    applyAccentColor('#B5D8CC')
-                  }}
-                  className="text-xs text-warm-600"
-                >
-                  <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                  Restaurar Sálvia Padrão
-                </Button>
-
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectPreset('#BC849D')}
+                    className="text-xs text-[#8b4f6b] border-[#BC849D]/40 hover:bg-[#BC849D]/10 font-medium"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1 text-[#BC849D]" />
+                    Usar Malva da Logo (#BC849D)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectPreset('#B5D8CC')}
+                    className="text-xs text-warm-600"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                    Restaurar Sálvia Padrão
+                  </Button>
+                </div>
                 <Button
                   onClick={handleSaveConfig}
                   disabled={isSavingColor}

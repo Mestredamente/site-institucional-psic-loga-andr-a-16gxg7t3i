@@ -26,7 +26,7 @@ export default function SettingsTab() {
 
   // Form de credenciais
   const [name, setName] = useState(user?.name || 'Andréa Armôa')
-  const [email, setEmail] = useState(user?.email || 'mestredamente1@gmail.com')
+  const [email, setEmail] = useState(user?.email || 'neuropsicologa.andreaarmoa@gmail.com')
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -151,11 +151,11 @@ export default function SettingsTab() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="mestredamente1@gmail.com"
+                    placeholder="neuropsicologa.andreaarmoa@gmail.com"
                     required
                   />
                   <span className="text-[11px] text-warm-400 block">
-                    Usuário padrão inicial: mestredamente1@gmail.com
+                    E-mail titular: neuropsicologa.andreaarmoa@gmail.com
                   </span>
                 </div>
 
@@ -175,10 +175,9 @@ export default function SettingsTab() {
                       placeholder="••••••••"
                     />
                     <span className="text-[11px] text-warm-400 block">
-                      Necessária para confirmar a troca de senha (inicial seed: Skip@Pass)
+                      Necessária apenas se for alterar a senha pelo painel
                     </span>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-warm-700">Nova Senha</Label>
