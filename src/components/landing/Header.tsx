@@ -62,27 +62,45 @@ export default function Header({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo / Nome */}
-        <a href="#" className="flex items-center gap-3 group focus:outline-none">
+        <a
+          href="#"
+          className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-500 rounded-md transition-opacity"
+        >
           {isLoadingMedia ? (
-            /* Skeleton neutro para evitar salto durante o carregamento inicial */
-            <div className="h-10 md:h-[72px] w-28 md:w-56 rounded-lg bg-warm-200/60 animate-pulse" />
+            /* Placeholder invisível que apenas reserva o espaço exato sem cor cinza e sem pulsação (CLS-safe) */
+            <div className="h-10 md:h-[72px] w-28 md:w-56 pointer-events-none" aria-hidden="true" />
           ) : logoUrl ? (
             <div className="relative h-10 md:h-[72px] flex items-center">
+              {/* Espaço reservado invisível enquanto a imagem decodifica/baixa: sem cor de fundo, sem pulso */}
               {!logoLoaded && (
-                <div className="absolute inset-0 w-24 md:w-48 h-10 md:h-[72px] rounded bg-warm-200/50 animate-pulse" />
+                <div
+                  className="w-28 md:w-56 h-10 md:h-[72px] pointer-events-none"
+                  aria-hidden="true"
+                />
               )}
-              <img
-                src={logoUrl}
-                alt="Andréa Armôa"
-                onLoad={() => setLogoLoaded(true)}
-                className={`h-10 md:h-[72px] w-auto max-w-[280px] md:max-w-none object-contain transition-opacity duration-300 ${
+              <div
+                className={`relative flex items-center transition-all duration-150 motion-reduce:transition-none ${
                   logoLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
-              />
+              >
+                <img
+                  src={logoUrl}
+                  alt="Andréa Armôa - Psicóloga e Neuropsicóloga"
+                  decoding="async"
+                  fetchPriority="high"
+                  onLoad={() => setLogoLoaded(true)}
+                  className="h-10 md:h-[72px] w-auto max-w-[280px] md:max-w-none object-contain select-none transition-[filter,transform] duration-300 drop-shadow-[0_2px_8px_rgba(46,59,54,0.08)] [filter:contrast(1.05)_saturate(1.04)] group-hover:drop-shadow-[0_4px_12px_rgba(201,169,106,0.22)]"
+                />
+                {/* Detalhe dourado fino decorativo na borda direita da logo */}
+                <span
+                  className="hidden sm:inline-block h-6 md:h-9 w-px ml-3.5 bg-gradient-to-b from-transparent via-[#C9A96A]/40 to-transparent"
+                  aria-hidden="true"
+                />
+              </div>
             </div>
           ) : (
             /* Monograma / Tipografia Padrão quando confirmado que não há logo salvo */
-            <div className="flex flex-col animate-fade-in">
+            <div className="flex flex-col animate-fade-in motion-reduce:animate-none">
               <div className="flex items-center gap-2">
                 <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-800 group-hover:text-warm-900 transition-colors">
                   Andréa Armôa

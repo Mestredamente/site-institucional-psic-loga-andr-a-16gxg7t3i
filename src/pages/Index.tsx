@@ -17,6 +17,7 @@ import WhatsAppButton from '@/components/landing/WhatsAppButton'
 import {
   fetchSiteContent,
   fetchSiteMedia,
+  getCachedSiteMedia,
   fetchBlogPosts,
   fetchDocuments,
 } from '@/services/content'
@@ -26,15 +27,20 @@ import type { BlogPostRecord, DocumentRecord } from '@/types/content'
 
 export default function Index() {
   const [contentMap, setContentMap] = useState<Record<string, any>>({})
-  // mediaMap inicia como null para representar busca em andamento e evitar qualquer FOUC
-  const [mediaMap, setMediaMap] = useState<Record<string, string> | null>(null)
+  // mediaMap inicializado com cache local para resolução imediata da logo sem espera de rede
+  const [mediaMap, setMediaMap] = useState<Record<string, string> | null>(() =>
+    getCachedSiteMedia(),
+  )
   const [blogPosts, setBlogPosts] = useState<BlogPostRecord[]>([])
   const [documents, setDocuments] = useState<DocumentRecord[]>([])
-  const [loadingMedia, setLoadingMedia] = useState(true)
+  const [loadingMedia, setLoadingMedia] = useState(() => !getCachedSiteMedia())
 
   const loadData = useCallback(async () => {
     try {
-      setLoadingMedia(true)
+      // Se já temos cache, evitamos piscar loadingMedia
+      if (!getCachedSiteMedia()) {
+        setLoadingMedia(true)
+      }
       const [contentRes, mediaRes, postsRes, docsRes] = await Promise.allSettled([
         fetchSiteContent(),
         fetchSiteMedia(),
@@ -43,12 +49,12 @@ export default function Index() {
       ])
       if (contentRes.status === 'fulfilled') setContentMap(contentRes.value)
       if (mediaRes.status === 'fulfilled') setMediaMap(mediaRes.value || {})
-      else setMediaMap({})
+      else setMediaMap((prev) => prev || {})
       if (postsRes.status === 'fulfilled') setBlogPosts(postsRes.value)
       if (docsRes.status === 'fulfilled') setDocuments(docsRes.value)
     } catch (err) {
       console.error('Erro ao carregar dados:', err)
-      setMediaMap({})
+      setMediaMap((prev) => prev || {})
     } finally {
       setLoadingMedia(false)
     }
@@ -69,8 +75,26 @@ export default function Index() {
     }
   }, [contentMap, mediaMap])
 
-  // Performance LCP: Preload da foto do hero quando houver foto salva (URL absoluta)
+  // Performance LCP: Preload da foto do hero e da logo quando disponíveis
   useEffect(() => {
+    // 1. Preload da logo do cabeçalho
+    const logoUrl = mediaMap?.['logo']
+    if (logoUrl && logoUrl.trim() !== '') {
+      const existingLogoPreload = document.querySelector('link[data-logo-preload="true"]')
+      if (!existingLogoPreload) {
+        const link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.href = logoUrl
+        link.setAttribute('fetchpriority', 'high')
+        link.setAttribute('data-logo-preload', 'true')
+        document.head.appendChild(link)
+      } else if (existingLogoPreload.getAttribute('href') !== logoUrl) {
+        existingLogoPreload.setAttribute('href', logoUrl)
+      }
+    }
+
+    // 2. Preload da foto do hero
     const heroPhotoUrl = mediaMap?.['hero_foto']
     if (heroPhotoUrl && heroPhotoUrl.trim() !== '') {
       const existingPreload = document.querySelector('link[data-hero-preload="true"]')

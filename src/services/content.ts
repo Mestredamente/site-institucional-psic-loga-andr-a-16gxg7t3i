@@ -156,6 +156,20 @@ export async function updateSiteContent(
   )
 }
 
+const SITE_MEDIA_CACHE_KEY = 'andrea_armoa_site_media_cache'
+
+export function getCachedSiteMedia(): Record<string, string> | null {
+  try {
+    const cached = localStorage.getItem(SITE_MEDIA_CACHE_KEY)
+    if (cached) {
+      return JSON.parse(cached)
+    }
+  } catch (_) {
+    /* ignore storage errors */
+  }
+  return null
+}
+
 export async function fetchSiteMedia(): Promise<Record<string, string>> {
   try {
     const records = await withTimeout(
@@ -168,6 +182,11 @@ export async function fetchSiteMedia(): Promise<Record<string, string>> {
       if (rec.file) {
         map[rec.key] = pb.files.getURL(rec, rec.file)
       }
+    }
+    try {
+      localStorage.setItem(SITE_MEDIA_CACHE_KEY, JSON.stringify(map))
+    } catch (_) {
+      /* ignore storage errors */
     }
     return map
   } catch (err) {
