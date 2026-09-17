@@ -56,8 +56,8 @@ export default function Header({
       role="banner"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-warm-50/95 backdrop-blur-md shadow-sm border-b border-warm-200/60 py-3'
-          : 'bg-warm-50/60 backdrop-blur-sm py-5'
+          ? 'bg-warm-50/95 backdrop-blur-md shadow-sm border-b border-warm-200/60 py-2 sm:py-2.5'
+          : 'bg-warm-50/70 backdrop-blur-sm py-2.5 sm:py-3.5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -65,17 +65,17 @@ export default function Header({
         <a href="#" className="flex items-center gap-3 group focus:outline-none">
           {isLoadingMedia ? (
             /* Skeleton neutro para evitar salto durante o carregamento inicial */
-            <div className="h-10 w-44 rounded-lg bg-warm-200/60 animate-pulse" />
+            <div className="h-10 md:h-[72px] w-28 md:w-56 rounded-lg bg-warm-200/60 animate-pulse" />
           ) : logoUrl ? (
-            <div className="relative h-10 flex items-center">
+            <div className="relative h-10 md:h-[72px] flex items-center">
               {!logoLoaded && (
-                <div className="absolute inset-0 w-24 h-10 rounded bg-warm-200/50 animate-pulse" />
+                <div className="absolute inset-0 w-24 md:w-48 h-10 md:h-[72px] rounded bg-warm-200/50 animate-pulse" />
               )}
               <img
                 src={logoUrl}
                 alt="Andréa Armôa"
                 onLoad={() => setLogoLoaded(true)}
-                className={`h-10 w-auto object-contain transition-opacity duration-300 ${
+                className={`h-10 md:h-[72px] w-auto max-w-[280px] md:max-w-none object-contain transition-opacity duration-300 ${
                   logoLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
               />
